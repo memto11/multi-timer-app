@@ -171,17 +171,14 @@ body {
   background: rgba(255,255,255,0.08);
   border: none;
   border-radius: 12px;
-
-  padding: 6px 14px; /* 🔥 больше воздуха */
+  padding: 6px 14px;
   font-size: 13px;
-
   color: rgba(255,255,255,0.7);
-
   cursor: pointer;
   transition: 0.2s;
-
-  white-space: nowrap; /* 🔥 чтобы не переносилось */
+  white-space: nowrap;
 }
+
 
 .type-btn.active {
   background: var(--accent);
@@ -191,7 +188,14 @@ body {
 .type-btn:hover {
   background: rgba(255,255,255,0.15);
 }
+.type-btn.active:hover {
+  background: var(--accent-hover);
+  color: white;
+}
 
+.type-btn:active {
+  transform: scale(0.97);
+}
 /* ===== КНОПКА СТАРТА ===== */
 
 .start-btn {

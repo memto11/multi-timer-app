@@ -13,6 +13,7 @@ const clearAllBtn = document.getElementById("clearAll");
 const MAX_TIMERS = 10;
 
 let timers = [];
+let deletedTimers = []; // 🔥 стек удалённых
 
 // =====================
 // STORAGE
@@ -127,7 +128,6 @@ function renderTimers() {
 
     el.addEventListener("dragend", () => {
       el.classList.remove("dragging");
-
       updateTimersOrder();
       saveTimers();
     });
@@ -143,9 +143,15 @@ function renderTimers() {
 
     el.querySelector(".delete-btn").onclick = (e) => {
       e.stopPropagation();
+
+      deletedTimers.push(timer); // 🔥 сохраняем
+
       timers = timers.filter(t => t.id !== timer.id);
+
       saveTimers();
       renderTimers();
+
+      showToast("Таймер удалён (Ctrl + Z — отменить)");
     };
 
     const input = el.querySelector(".timer-name");
@@ -162,9 +168,7 @@ function renderTimers() {
     typeButtons.forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-
         timer.type = btn.dataset.type;
-
         saveTimers();
         renderTimers();
       });
@@ -175,7 +179,7 @@ function renderTimers() {
 }
 
 // =====================
-// DRAG CONTAINER
+// DRAG
 // =====================
 
 timersContainer.addEventListener("dragover", (e) => {
@@ -224,6 +228,44 @@ setInterval(() => {
   updateTimes();
   saveTimers();
 }, 1000);
+
+// =====================
+// UNDO (Ctrl + Z) 🔥 ИСПРАВЛЕНО
+// =====================
+
+function undoDelete() {
+  if (deletedTimers.length === 0) return;
+
+  const last = deletedTimers.pop();
+  timers.push(last);
+
+  saveTimers();
+  renderTimers();
+
+  showToast("Таймер восстановлен");
+}
+
+document.addEventListener("keydown", (e) => {
+  const isUndo = (e.ctrlKey || e.metaKey) && e.code === "KeyZ";
+
+  if (!isUndo) return;
+
+  const activeEl = document.activeElement;
+
+  const isInputFocused =
+    activeEl &&
+    (
+      activeEl.tagName === "INPUT" ||
+      activeEl.tagName === "TEXTAREA" ||
+      activeEl.isContentEditable
+    );
+
+  if (!isInputFocused) {
+    e.preventDefault();
+    undoDelete();
+  }
+
+}, true);
 
 // =====================
 // EXPORT
