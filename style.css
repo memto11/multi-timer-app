@@ -409,3 +409,7 @@ body {
 .timer:not(.dragging) {
   transition: transform 0.25s ease;
 }
+.type-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

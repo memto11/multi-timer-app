@@ -13,7 +13,7 @@ const clearAllBtn = document.getElementById("clearAll");
 const MAX_TIMERS = 10;
 
 let timers = [];
-let deletedTimers = []; // 🔥 стек удалённых
+let deletedTimers = [];
 
 // =====================
 // STORAGE
@@ -46,7 +46,8 @@ function createTimer() {
     name: "",
     time: 0,
     isRunning: false,
-    type: "main"
+    type: "main",
+    typeLocked: false // 🔥 ключевая штука
   };
 
   timers.push(timer);
@@ -132,19 +133,28 @@ function renderTimers() {
       saveTimers();
     });
 
-    // ===== ЛОГИКА =====
+    // ===== СТАРТ / ПАУЗА =====
 
     el.querySelector(".start-btn").onclick = (e) => {
       e.stopPropagation();
+
+      // 🔥 фиксируем тип при первом старте
+      if (!timer.isRunning && !timer.typeLocked) {
+        timer.typeLocked = true;
+      }
+
       timer.isRunning = !timer.isRunning;
+
       saveTimers();
       renderTimers();
     };
 
+    // ===== УДАЛЕНИЕ =====
+
     el.querySelector(".delete-btn").onclick = (e) => {
       e.stopPropagation();
 
-      deletedTimers.push(timer); // 🔥 сохраняем
+      deletedTimers.push(timer);
 
       timers = timers.filter(t => t.id !== timer.id);
 
@@ -153,6 +163,8 @@ function renderTimers() {
 
       showToast("Таймер удалён (Ctrl + Z — отменить)");
     };
+
+    // ===== INPUT =====
 
     const input = el.querySelector(".timer-name");
 
@@ -163,12 +175,26 @@ function renderTimers() {
       saveTimers();
     };
 
+    // ===== 🔥 ТИП ЗАДАЧ =====
+
     const typeButtons = el.querySelectorAll(".type-btn");
+
+    // 🔒 визуальная блокировка
+    if (timer.typeLocked) {
+      typeButtons.forEach(btn => btn.classList.add("disabled"));
+    }
 
     typeButtons.forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
+
+        if (timer.typeLocked) {
+          showToast("Тип задачи уже зафиксирован");
+          return;
+        }
+
         timer.type = btn.dataset.type;
+
         saveTimers();
         renderTimers();
       });
@@ -230,7 +256,7 @@ setInterval(() => {
 }, 1000);
 
 // =====================
-// UNDO (Ctrl + Z) 🔥 ИСПРАВЛЕНО
+// UNDO
 // =====================
 
 function undoDelete() {
