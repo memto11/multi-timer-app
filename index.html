@@ -49,20 +49,27 @@
     <!-- ===== SETTINGS SCREEN ===== -->
     <div id="settingsScreen" class="screen">
 
-      <div class="settings-header">
-        <button id="backBtn">←</button>
-        <h3>Настройки</h3>
-      </div>
+  <div class="settings-header">
+    <button id="backBtn" class="back-btn">←</button>
+    <h2>Настройки</h2>
+  </div>
 
-      <div class="settings-content">
-        <button id="toggleTheme">Сменить тему</button>
-        <button id="clearAll">Удалить все таймеры</button>
-        <p>Версия 1.0</p>
-      </div>
+  <div class="settings-card">
 
-    </div>
+    <button id="toggleTheme" class="settings-btn">
+      Сменить тему
+    </button>
+
+    <button id="clearAll" class="settings-btn danger">
+      Удалить все таймеры
+    </button>
+
+    <p class="version">Версия 1.0 
+      <br>Разработано Бойцовым Александром</p>
 
   </div>
+
+</div>
 
   <!-- XLSX -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>

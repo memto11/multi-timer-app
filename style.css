@@ -1,7 +1,7 @@
-/* ===== ГЛОБАЛЬНЫЙ ФИКС (ВАЖНО) ===== */
+/* ===== ГЛОБАЛЬНЫЙ ФИКС ===== */
 
 * {
-  box-sizing: border-box; /* 🔥 фикс переполнения */
+  box-sizing: border-box;
 }
 
 /* ===== БАЗА ===== */
@@ -39,8 +39,6 @@ body {
   transition: transform 0.35s ease;
 }
 
-/* позиции экранов */
-
 #mainScreen {
   transform: translateX(0);
 }
@@ -48,8 +46,6 @@ body {
 #settingsScreen {
   transform: translateX(100%);
 }
-
-/* переключение */
 
 .show-settings #mainScreen {
   transform: translateX(-100%);
@@ -68,24 +64,12 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 
-  gap: 24px; /* 🔥 теперь реально работает */
-
+  gap: 24px;
   padding: 20px;
   padding-bottom: 100px;
 
   box-sizing: border-box;
   align-content: start;
-}
-
-/* ===== СКРОЛЛ ===== */
-
-.timers-wrapper::-webkit-scrollbar {
-  width: 6px;
-}
-
-.timers-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.2);
-  border-radius: 10px;
 }
 
 /* ===== КАРТОЧКА ===== */
@@ -98,7 +82,6 @@ body {
 
   width: 100%;
   min-width: 0;
-  box-sizing: border-box; /* 🔥 фикс */
 
   display: flex;
   flex-direction: column;
@@ -108,13 +91,9 @@ body {
   transition: 0.2s;
 }
 
-/* hover */
-
 .timer:hover {
   transform: translateY(-3px);
 }
-
-/* активный */
 
 .timer.active {
   border: 2px solid rgba(255,165,0,0.9);
@@ -126,13 +105,34 @@ body {
   position: relative;
 }
 
+/* ===== НОВЫЙ INPUT ===== */
+
 .timer-name {
   background: transparent;
   border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.3); /* 🔥 линия */
+
   color: white;
   font-size: 18px;
+
   outline: none;
   width: 100%;
+
+  padding: 4px 0;
+
+  transition: border 0.2s;
+}
+
+/* placeholder */
+
+.timer-name::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+/* фокус */
+
+.timer-name:focus {
+  border-bottom: 1px solid orange;
 }
 
 /* ===== ВРЕМЯ ===== */
@@ -176,14 +176,14 @@ body {
 
 .delete-btn {
   position: absolute;
-  top: 0px;
+  top: 150px;
   right: 0px;
 
   background: none;
   border: none;
 
   color: rgba(255,255,255,0.6);
-  font-size: 14px;
+  font-size: 18px;
 
   cursor: pointer;
 
@@ -237,54 +237,8 @@ body {
   cursor: pointer;
 }
 
-/* ===== НАСТРОЙКИ ===== */
+/* ===== TOAST ===== */
 
-.settings-header {
-  display: flex;
-  align-items: center;
-  position: relative;
-  padding: 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.2);
-}
-
-.settings-header h3 {
-  margin: 0 auto;
-  color: white;
-}
-
-.settings-content {
-  padding: 20px;
-  color: white;
-}
-
-/* ===== АНИМАЦИИ ===== */
-
-.timer.new-timer {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: timerAppear 0.3s ease forwards;
-}
-
-@keyframes timerAppear {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ===== DARK ===== */
-
-body.dark {
-  background: #222;
-}
-
-body.dark .app-wrapper {
-  background: #333;
-}
-
-body.dark .timer {
-  background: #444;
-}
 .toast {
   position: fixed;
   bottom: 20px;
@@ -305,7 +259,106 @@ body.dark .timer {
   transition: 0.3s;
 }
 
-/* активное состояние */
 .toast.show {
   opacity: 1;
+}
+
+/* ===== DARK ===== */
+
+body.dark {
+  background: #222;
+}
+
+body.dark .app-wrapper {
+  background: #333;
+}
+
+body.dark .timer {
+  background: #444;
+}
+/* ===== SETTINGS HEADER ===== */
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  position: relative;
+}
+
+.settings-header h2 {
+  margin: 0 auto;
+  color: white;
+  font-weight: 400;
+}
+
+/* стрелка назад */
+
+.back-btn {
+  position: absolute;
+  left: 20px;
+
+  background: none;
+  border: none;
+
+  color: white;
+  font-size: 18px;
+
+  cursor: pointer;
+}
+
+/* ===== КАРТОЧКА ===== */
+
+.settings-card {
+  background: #777;
+  margin: 20px;
+  padding: 20px;
+
+  border-radius: 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* ===== КНОПКИ ===== */
+
+.settings-btn {
+  height: 50px;
+  border: none;
+
+  border-radius: 14px;
+
+  background: #888;
+  color: white;
+
+  font-size: 16px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+/* hover */
+
+.settings-btn:hover {
+  background: #999;
+}
+
+/* опасная кнопка */
+
+.settings-btn.danger {
+  background: #f44336;
+}
+
+.settings-btn.danger:hover {
+  background: #ff5c4d;
+}
+
+/* ===== VERSION ===== */
+
+.version {
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  margin-top: 10px;
 }

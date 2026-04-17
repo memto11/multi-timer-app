@@ -11,6 +11,8 @@ const backBtn = document.getElementById("backBtn");
 const clearAllBtn = document.getElementById("clearAll");
 const toggleThemeBtn = document.getElementById("toggleTheme");
 
+const MAX_TIMERS = 10;
+
 let timers = [];
 
 // =====================
@@ -40,8 +42,8 @@ function loadTheme() {
 // =====================
 
 addBtn.addEventListener("click", () => {
-  if (timers.length >= 10) {
-    showToast("Максимум 10 таймеров");
+  if (timers.length >= MAX_TIMERS) {
+    showToast(`Максимум ${MAX_TIMERS} таймеров`);
     return;
   }
 
@@ -51,7 +53,7 @@ addBtn.addEventListener("click", () => {
 function createTimer(isNew = false) {
   const timer = {
     id: Date.now(),
-    name: "Название",
+    name: "",
     time: 0,
     isRunning: false,
     isNew: isNew
@@ -98,14 +100,17 @@ function renderTimers() {
     timerEl.className = "timer";
     timerEl.setAttribute("data-id", timer.id);
 
-    // активный таймер
     if (timer.isRunning) {
       timerEl.classList.add("active");
     }
 
     timerEl.innerHTML = `
       <div class="timer-top">
-        <input class="timer-name" value="${timer.name}" />
+        <input 
+          class="timer-name" 
+          value="${timer.name}" 
+          placeholder="Название"
+        />
         <button class="delete-btn">✕</button>
       </div>
 
@@ -125,7 +130,7 @@ function renderTimers() {
       renderTimers();
     });
 
-    // ❌ удаление (МГНОВЕННО)
+    // ❌ удаление
     const deleteBtn = timerEl.querySelector(".delete-btn");
     deleteBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -135,7 +140,7 @@ function renderTimers() {
       renderTimers();
     });
 
-    // 📝 изменение названия
+    // 📝 название
     const nameInput = timerEl.querySelector(".timer-name");
 
     nameInput.addEventListener("click", (e) => {
@@ -167,12 +172,27 @@ setInterval(() => {
 }, 1000);
 
 // =====================
+// TOAST
+// =====================
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2000);
+}
+
+// =====================
 // EXPORT EXCEL
 // =====================
 
 exportBtn.addEventListener("click", () => {
   const data = timers.map(timer => ({
-    "Название": timer.name,
+    "Название": timer.name || "Без названия",
     "Время": formatTime(timer.time)
   }));
 
@@ -212,16 +232,6 @@ toggleThemeBtn.addEventListener("click", () => {
     document.body.classList.contains("dark") ? "dark" : "light"
   );
 });
-function showToast(message) {
-  const toast = document.getElementById("toast");
-
-  toast.textContent = message;
-  toast.classList.add("show");
-
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2000);
-}
 
 // =====================
 // INIT
