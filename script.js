@@ -20,9 +20,7 @@ let timers = [];
 
 function loadTimers() {
   const data = localStorage.getItem("timers");
-  if (data) {
-    timers = JSON.parse(data);
-  }
+  if (data) timers = JSON.parse(data);
 }
 
 function saveTimers() {
@@ -38,7 +36,6 @@ addBtn.addEventListener("click", () => {
     showToast(`Максимум ${MAX_TIMERS} таймеров`);
     return;
   }
-
   createTimer();
 });
 
@@ -55,7 +52,6 @@ function createTimer() {
   saveTimers();
   renderTimers();
 
-  // автофокус
   setTimeout(() => {
     const input = document.querySelector(`[data-id="${timer.id}"] .timer-name`);
     if (input) input.focus();
@@ -93,6 +89,7 @@ function renderTimers() {
     el.className = "timer";
     el.setAttribute("data-id", timer.id);
     el.setAttribute("data-type", timer.type);
+    el.draggable = true;
 
     if (timer.isRunning) el.classList.add("active");
 
@@ -108,7 +105,6 @@ function renderTimers() {
 
       <div class="timer-time">${formatTime(timer.time)}</div>
 
-      <!-- 🔥 ОБНОВЛЕНО -->
       <div class="timer-type">
         <button class="type-btn ${timer.type === "main" ? "active" : ""}" data-type="main">
           Плановая
@@ -123,7 +119,21 @@ function renderTimers() {
       </button>
     `;
 
-    // ▶ старт / пауза
+    // ===== DRAG =====
+
+    el.addEventListener("dragstart", () => {
+      el.classList.add("dragging");
+    });
+
+    el.addEventListener("dragend", () => {
+      el.classList.remove("dragging");
+
+      updateTimersOrder();
+      saveTimers();
+    });
+
+    // ===== ЛОГИКА =====
+
     el.querySelector(".start-btn").onclick = (e) => {
       e.stopPropagation();
       timer.isRunning = !timer.isRunning;
@@ -131,7 +141,6 @@ function renderTimers() {
       renderTimers();
     };
 
-    // ❌ удаление
     el.querySelector(".delete-btn").onclick = (e) => {
       e.stopPropagation();
       timers = timers.filter(t => t.id !== timer.id);
@@ -139,7 +148,6 @@ function renderTimers() {
       renderTimers();
     };
 
-    // 📝 имя
     const input = el.querySelector(".timer-name");
 
     input.onclick = (e) => e.stopPropagation();
@@ -149,7 +157,6 @@ function renderTimers() {
       saveTimers();
     };
 
-    // 🔥 ТИП ЗАДАЧ
     const typeButtons = el.querySelectorAll(".type-btn");
 
     typeButtons.forEach(btn => {
@@ -168,6 +175,44 @@ function renderTimers() {
 }
 
 // =====================
+// DRAG CONTAINER
+// =====================
+
+timersContainer.addEventListener("dragover", (e) => {
+  e.preventDefault();
+
+  const draggingEl = document.querySelector(".dragging");
+  const elements = [...timersContainer.querySelectorAll(".timer:not(.dragging)")];
+
+  const nextEl = elements.find(el => {
+    const rect = el.getBoundingClientRect();
+    return e.clientY < rect.top + rect.height / 2;
+  });
+
+  if (nextEl) {
+    timersContainer.insertBefore(draggingEl, nextEl);
+  } else {
+    timersContainer.appendChild(draggingEl);
+  }
+});
+
+// =====================
+// UPDATE ORDER
+// =====================
+
+function updateTimersOrder() {
+  const newOrder = [];
+
+  document.querySelectorAll(".timer").forEach(el => {
+    const id = Number(el.dataset.id);
+    const timer = timers.find(t => t.id === id);
+    if (timer) newOrder.push(timer);
+  });
+
+  timers = newOrder;
+}
+
+// =====================
 // GLOBAL TIMER
 // =====================
 
@@ -181,11 +226,10 @@ setInterval(() => {
 }, 1000);
 
 // =====================
-// EXPORT EXCEL
+// EXPORT
 // =====================
 
 exportBtn.addEventListener("click", () => {
-
   const mainTasks = timers.filter(t => t.type === "main");
   const extraTasks = timers.filter(t => t.type === "extra");
 
@@ -207,7 +251,6 @@ exportBtn.addEventListener("click", () => {
   const wb = XLSX.utils.book_new();
 
   XLSX.utils.book_append_sheet(wb, ws, "Отчет");
-
   XLSX.writeFile(wb, "weekly-report.xlsx");
 });
 
