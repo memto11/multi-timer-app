@@ -9,7 +9,6 @@ const backBtn = document.getElementById("backBtn");
 
 // настройки
 const clearAllBtn = document.getElementById("clearAll");
-const toggleThemeBtn = document.getElementById("toggleTheme");
 
 const MAX_TIMERS = 10;
 
@@ -30,13 +29,6 @@ function saveTimers() {
   localStorage.setItem("timers", JSON.stringify(timers));
 }
 
-function loadTheme() {
-  const theme = localStorage.getItem("theme");
-  if (theme === "dark") {
-    document.body.classList.add("dark");
-  }
-}
-
 // =====================
 // CREATE TIMER
 // =====================
@@ -47,21 +39,27 @@ addBtn.addEventListener("click", () => {
     return;
   }
 
-  createTimer(true);
+  createTimer();
 });
 
-function createTimer(isNew = false) {
+function createTimer() {
   const timer = {
     id: Date.now(),
     name: "",
     time: 0,
     isRunning: false,
-    isNew: isNew
+    type: "main"
   };
 
   timers.push(timer);
   saveTimers();
   renderTimers();
+
+  // автофокус
+  setTimeout(() => {
+    const input = document.querySelector(`[data-id="${timer.id}"] .timer-name`);
+    if (input) input.focus();
+  }, 0);
 }
 
 // =====================
@@ -78,13 +76,8 @@ function formatTime(seconds) {
 
 function updateTimes() {
   timers.forEach(timer => {
-    const timeEl = document.querySelector(
-      `[data-id="${timer.id}"] .timer-time`
-    );
-
-    if (timeEl) {
-      timeEl.textContent = formatTime(timer.time);
-    }
+    const el = document.querySelector(`[data-id="${timer.id}"] .timer-time`);
+    if (el) el.textContent = formatTime(timer.time);
   });
 }
 
@@ -96,15 +89,14 @@ function renderTimers() {
   timersContainer.innerHTML = "";
 
   timers.forEach(timer => {
-    const timerEl = document.createElement("div");
-    timerEl.className = "timer";
-    timerEl.setAttribute("data-id", timer.id);
+    const el = document.createElement("div");
+    el.className = "timer";
+    el.setAttribute("data-id", timer.id);
+    el.setAttribute("data-type", timer.type);
 
-    if (timer.isRunning) {
-      timerEl.classList.add("active");
-    }
+    if (timer.isRunning) el.classList.add("active");
 
-    timerEl.innerHTML = `
+    el.innerHTML = `
       <div class="timer-top">
         <input 
           class="timer-name" 
@@ -116,43 +108,62 @@ function renderTimers() {
 
       <div class="timer-time">${formatTime(timer.time)}</div>
 
+      <!-- 🔥 ОБНОВЛЕНО -->
+      <div class="timer-type">
+        <button class="type-btn ${timer.type === "main" ? "active" : ""}" data-type="main">
+          Плановая
+        </button>
+        <button class="type-btn ${timer.type === "extra" ? "active" : ""}" data-type="extra">
+          Дополнительная
+        </button>
+      </div>
+
       <button class="start-btn ${timer.isRunning ? "pause" : ""}">
         ${timer.isRunning ? "❚❚" : "▶"}
       </button>
     `;
 
     // ▶ старт / пауза
-    const startBtn = timerEl.querySelector(".start-btn");
-    startBtn.addEventListener("click", (e) => {
+    el.querySelector(".start-btn").onclick = (e) => {
       e.stopPropagation();
       timer.isRunning = !timer.isRunning;
       saveTimers();
       renderTimers();
-    });
+    };
 
     // ❌ удаление
-    const deleteBtn = timerEl.querySelector(".delete-btn");
-    deleteBtn.addEventListener("click", (e) => {
+    el.querySelector(".delete-btn").onclick = (e) => {
       e.stopPropagation();
-
       timers = timers.filter(t => t.id !== timer.id);
       saveTimers();
       renderTimers();
-    });
+    };
 
-    // 📝 название
-    const nameInput = timerEl.querySelector(".timer-name");
+    // 📝 имя
+    const input = el.querySelector(".timer-name");
 
-    nameInput.addEventListener("click", (e) => {
-      e.stopPropagation();
-    });
+    input.onclick = (e) => e.stopPropagation();
 
-    nameInput.addEventListener("input", (e) => {
+    input.oninput = (e) => {
       timer.name = e.target.value;
       saveTimers();
+    };
+
+    // 🔥 ТИП ЗАДАЧ
+    const typeButtons = el.querySelectorAll(".type-btn");
+
+    typeButtons.forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+
+        timer.type = btn.dataset.type;
+
+        saveTimers();
+        renderTimers();
+      });
     });
 
-    timersContainer.appendChild(timerEl);
+    timersContainer.appendChild(el);
   });
 }
 
@@ -161,15 +172,44 @@ function renderTimers() {
 // =====================
 
 setInterval(() => {
-  timers.forEach(timer => {
-    if (timer.isRunning) {
-      timer.time += 1;
-    }
+  timers.forEach(t => {
+    if (t.isRunning) t.time++;
   });
 
   updateTimes();
   saveTimers();
 }, 1000);
+
+// =====================
+// EXPORT EXCEL
+// =====================
+
+exportBtn.addEventListener("click", () => {
+
+  const mainTasks = timers.filter(t => t.type === "main");
+  const extraTasks = timers.filter(t => t.type === "extra");
+
+  const data = [];
+
+  data.push(["Основные задачи"]);
+  mainTasks.forEach(t => {
+    data.push([t.name || "Без названия", formatTime(t.time)]);
+  });
+
+  data.push([]);
+
+  data.push(["Дополнительные задачи"]);
+  extraTasks.forEach(t => {
+    data.push([t.name || "Без названия", formatTime(t.time)]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(wb, ws, "Отчет");
+
+  XLSX.writeFile(wb, "weekly-report.xlsx");
+});
 
 // =====================
 // TOAST
@@ -187,56 +227,28 @@ function showToast(message) {
 }
 
 // =====================
-// EXPORT EXCEL
-// =====================
-
-exportBtn.addEventListener("click", () => {
-  const data = timers.map(timer => ({
-    "Название": timer.name || "Без названия",
-    "Время": formatTime(timer.time)
-  }));
-
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Таймеры");
-
-  XLSX.writeFile(workbook, "timers.xlsx");
-});
-
-// =====================
 // SETTINGS
 // =====================
 
-settingsBtn.addEventListener("click", () => {
+settingsBtn.onclick = () => {
   body.classList.add("show-settings");
-});
+};
 
-backBtn.addEventListener("click", () => {
+backBtn.onclick = () => {
   body.classList.remove("show-settings");
-});
+};
 
-clearAllBtn.addEventListener("click", () => {
+clearAllBtn.onclick = () => {
   if (confirm("Удалить все таймеры?")) {
     timers = [];
     saveTimers();
     renderTimers();
   }
-});
-
-toggleThemeBtn.addEventListener("click", () => {
-  document.body.classList.toggle("dark");
-
-  localStorage.setItem(
-    "theme",
-    document.body.classList.contains("dark") ? "dark" : "light"
-  );
-});
+};
 
 // =====================
 // INIT
 // =====================
 
 loadTimers();
-loadTheme();
 renderTimers();

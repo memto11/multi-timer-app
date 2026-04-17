@@ -1,10 +1,22 @@
-/* ===== ГЛОБАЛЬНЫЙ ФИКС ===== */
+/* ===== ПЕРЕМЕННЫЕ ===== */
+
+:root {
+  --bg-main: #2f2f2f;
+  --bg-card: #3a3a3a;
+  --bg-light: #444;
+
+  --text-main: #ffffff;
+  --text-secondary: rgba(255,255,255,0.6);
+
+  --accent: #e53935;
+  --accent-hover: #ff4d4d;
+}
+
+/* ===== ГЛОБАЛЬНО ===== */
 
 * {
   box-sizing: border-box;
 }
-
-/* ===== БАЗА ===== */
 
 html, body {
   height: 100%;
@@ -13,7 +25,7 @@ html, body {
 }
 
 body {
-  background: #555;
+  background: var(--bg-main);
   font-family: Arial, sans-serif;
 }
 
@@ -23,7 +35,7 @@ body {
   width: 100%;
   height: 100%;
   position: relative;
-  background: #666;
+  background: var(--bg-main);
   overflow: hidden;
 }
 
@@ -32,10 +44,8 @@ body {
 .app, .screen {
   position: absolute;
   inset: 0;
-
   display: flex;
   flex-direction: column;
-
   transition: transform 0.35s ease;
 }
 
@@ -68,20 +78,27 @@ body {
   padding: 20px;
   padding-bottom: 100px;
 
-  box-sizing: border-box;
   align-content: start;
+}
+
+/* ===== SCROLLBAR ===== */
+
+.timers-wrapper::-webkit-scrollbar {
+  width: 4px;
+}
+
+.timers-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
 }
 
 /* ===== КАРТОЧКА ===== */
 
 .timer {
-  background: #777;
+  background: var(--bg-card);
   padding: 20px;
   border-radius: 20px;
-  color: white;
-
-  width: 100%;
-  min-width: 0;
+  color: var(--text-main);
 
   display: flex;
   flex-direction: column;
@@ -96,43 +113,41 @@ body {
 }
 
 .timer.active {
-  border: 2px solid rgba(255,165,0,0.9);
+  border: 2px solid var(--accent);
 }
 
-/* ===== ВЕРХ ===== */
-
-.timer-top {
-  position: relative;
+/* 🔥 подсветка доп задач */
+.timer[data-type="extra"] {
+  border: 1px dashed rgba(255,255,255,0.2);
 }
 
-/* ===== НОВЫЙ INPUT ===== */
+/* ===== INPUT ===== */
 
 .timer-name {
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(255,255,255,0.3); /* 🔥 линия */
+  border-bottom: 1px solid rgba(255,255,255,0.3);
 
-  color: white;
+  color: var(--text-main);
   font-size: 18px;
 
   outline: none;
-  width: 100%;
+  width: 70%;
+  margin: 0 auto;
+  display: block;
 
   padding: 4px 0;
 
   transition: border 0.2s;
+  text-align: left;
 }
-
-/* placeholder */
 
 .timer-name::placeholder {
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.20);
 }
 
-/* фокус */
-
 .timer-name:focus {
-  border-bottom: 1px solid orange;
+    border-bottom: 1px solid rgba(229,57,53,0.7);
 }
 
 /* ===== ВРЕМЯ ===== */
@@ -141,11 +156,43 @@ body {
   font-size: 42px;
   text-align: center;
   margin: 20px 0;
-  font-weight: 300;
-  letter-spacing: 2px;
 }
 
-/* ===== КНОПКА ===== */
+/* ===== 🔥 ТИП ЗАДАЧ ===== */
+
+.timer-type {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.type-btn {
+  background: rgba(255,255,255,0.08);
+  border: none;
+  border-radius: 12px;
+
+  padding: 6px 14px; /* 🔥 больше воздуха */
+  font-size: 13px;
+
+  color: rgba(255,255,255,0.7);
+
+  cursor: pointer;
+  transition: 0.2s;
+
+  white-space: nowrap; /* 🔥 чтобы не переносилось */
+}
+
+.type-btn.active {
+  background: var(--accent);
+  color: white;
+}
+
+.type-btn:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+/* ===== КНОПКА СТАРТА ===== */
 
 .start-btn {
   width: 140px;
@@ -154,7 +201,7 @@ body {
   border-radius: 18px;
   border: none;
 
-  background: orange;
+  background: var(--accent);
   color: white;
 
   font-size: 22px;
@@ -166,6 +213,11 @@ body {
   justify-content: center;
 
   cursor: pointer;
+  transition: 0.2s;
+}
+
+.start-btn:hover {
+  background: var(--accent-hover);
 }
 
 .start-btn.pause {
@@ -176,14 +228,14 @@ body {
 
 .delete-btn {
   position: absolute;
-  top: 150px;
-  right: 0px;
+  top: 10px;
+  right: 10px;
 
   background: none;
   border: none;
 
   color: rgba(255,255,255,0.6);
-  font-size: 18px;
+  font-size: 14px;
 
   cursor: pointer;
 
@@ -196,10 +248,10 @@ body {
 }
 
 .delete-btn:hover {
-  color: #ff4d4d;
+  color: var(--accent);
 }
 
-/* ===== FLOATING + ===== */
+/* ===== КНОПКА ДОБАВЛЕНИЯ ===== */
 
 #addTimer {
   position: absolute;
@@ -212,7 +264,7 @@ body {
   border-radius: 50%;
   border: none;
 
-  background: orange;
+  background: var(--accent);
   color: white;
   font-size: 30px;
 
@@ -231,10 +283,81 @@ body {
   padding: 10px 20px;
 }
 
-.icon-btn {
+/* текстовые кнопки */
+
+.settings-text-btn {
+  background: rgba(255,255,255,0.08);
+  border-radius: 10px;
+
+  padding: 6px 12px;
+
+  color: rgba(255,255,255,0.8);
+  font-size: 14px;
+
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.settings-text-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+
+/* ===== SETTINGS ===== */
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  position: relative;
+}
+
+.settings-header h2 {
+  margin: 0 auto;
+  color: white;
+}
+
+.back-btn {
+  position: absolute;
+  left: 20px;
   background: none;
   border: none;
+  color: white;
+  font-size: 18px;
   cursor: pointer;
+}
+
+.settings-card {
+  background: var(--bg-card);
+  margin: 20px;
+  padding: 20px;
+
+  border-radius: 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.settings-btn {
+  height: 50px;
+  border: none;
+  border-radius: 14px;
+
+  background: var(--bg-light);
+  color: white;
+
+  cursor: pointer;
+}
+
+.settings-btn.danger {
+  background: var(--accent);
+}
+
+.version {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
 }
 
 /* ===== TOAST ===== */
@@ -245,7 +368,7 @@ body {
   left: 50%;
   transform: translateX(-50%);
 
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0,0,0,0.8);
   color: white;
 
   padding: 10px 20px;
@@ -261,104 +384,4 @@ body {
 
 .toast.show {
   opacity: 1;
-}
-
-/* ===== DARK ===== */
-
-body.dark {
-  background: #222;
-}
-
-body.dark .app-wrapper {
-  background: #333;
-}
-
-body.dark .timer {
-  background: #444;
-}
-/* ===== SETTINGS HEADER ===== */
-
-.settings-header {
-  display: flex;
-  align-items: center;
-  padding: 15px 20px;
-  position: relative;
-}
-
-.settings-header h2 {
-  margin: 0 auto;
-  color: white;
-  font-weight: 400;
-}
-
-/* стрелка назад */
-
-.back-btn {
-  position: absolute;
-  left: 20px;
-
-  background: none;
-  border: none;
-
-  color: white;
-  font-size: 18px;
-
-  cursor: pointer;
-}
-
-/* ===== КАРТОЧКА ===== */
-
-.settings-card {
-  background: #777;
-  margin: 20px;
-  padding: 20px;
-
-  border-radius: 20px;
-
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-/* ===== КНОПКИ ===== */
-
-.settings-btn {
-  height: 50px;
-  border: none;
-
-  border-radius: 14px;
-
-  background: #888;
-  color: white;
-
-  font-size: 16px;
-
-  cursor: pointer;
-
-  transition: 0.2s;
-}
-
-/* hover */
-
-.settings-btn:hover {
-  background: #999;
-}
-
-/* опасная кнопка */
-
-.settings-btn.danger {
-  background: #f44336;
-}
-
-.settings-btn.danger:hover {
-  background: #ff5c4d;
-}
-
-/* ===== VERSION ===== */
-
-.version {
-  text-align: center;
-  font-size: 14px;
-  color: rgba(255,255,255,0.6);
-  margin-top: 10px;
 }
