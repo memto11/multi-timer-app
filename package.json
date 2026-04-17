@@ -1,0 +1,26 @@
+{
+  "name": "multi-timer",
+  "version": "1.0.0",
+  "description": "Multi timer app",
+  "main": "main.js",
+  "author": "",
+  "license": "ISC",
+
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.0.0"
+  },
+
+  "build": {
+    "appId": "com.multitimer.app",
+    "productName": "Multi Timer",
+    "win": {
+      "target": "nsis"
+    }
+  }
+}

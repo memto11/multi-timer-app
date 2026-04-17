@@ -1,0 +1,311 @@
+/* ===== ГЛОБАЛЬНЫЙ ФИКС (ВАЖНО) ===== */
+
+* {
+  box-sizing: border-box; /* 🔥 фикс переполнения */
+}
+
+/* ===== БАЗА ===== */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background: #555;
+  font-family: Arial, sans-serif;
+}
+
+/* ===== ОБЕРТКА ===== */
+
+.app-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #666;
+  overflow: hidden;
+}
+
+/* ===== ЭКРАНЫ ===== */
+
+.app, .screen {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  transition: transform 0.35s ease;
+}
+
+/* позиции экранов */
+
+#mainScreen {
+  transform: translateX(0);
+}
+
+#settingsScreen {
+  transform: translateX(100%);
+}
+
+/* переключение */
+
+.show-settings #mainScreen {
+  transform: translateX(-100%);
+}
+
+.show-settings #settingsScreen {
+  transform: translateX(0);
+}
+
+/* ===== GRID ===== */
+
+.timers-wrapper {
+  flex: 1;
+  overflow-y: auto;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+
+  gap: 24px; /* 🔥 теперь реально работает */
+
+  padding: 20px;
+  padding-bottom: 100px;
+
+  box-sizing: border-box;
+  align-content: start;
+}
+
+/* ===== СКРОЛЛ ===== */
+
+.timers-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.timers-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+}
+
+/* ===== КАРТОЧКА ===== */
+
+.timer {
+  background: #777;
+  padding: 20px;
+  border-radius: 20px;
+  color: white;
+
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box; /* 🔥 фикс */
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  position: relative;
+  transition: 0.2s;
+}
+
+/* hover */
+
+.timer:hover {
+  transform: translateY(-3px);
+}
+
+/* активный */
+
+.timer.active {
+  border: 2px solid rgba(255,165,0,0.9);
+}
+
+/* ===== ВЕРХ ===== */
+
+.timer-top {
+  position: relative;
+}
+
+.timer-name {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  outline: none;
+  width: 100%;
+}
+
+/* ===== ВРЕМЯ ===== */
+
+.timer-time {
+  font-size: 42px;
+  text-align: center;
+  margin: 20px 0;
+  font-weight: 300;
+  letter-spacing: 2px;
+}
+
+/* ===== КНОПКА ===== */
+
+.start-btn {
+  width: 140px;
+  height: 55px;
+
+  border-radius: 18px;
+  border: none;
+
+  background: orange;
+  color: white;
+
+  font-size: 22px;
+
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+.start-btn.pause {
+  background: #f44336;
+}
+
+/* ===== КРЕСТИК ===== */
+
+.delete-btn {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+
+  background: none;
+  border: none;
+
+  color: rgba(255,255,255,0.6);
+  font-size: 14px;
+
+  cursor: pointer;
+
+  opacity: 0;
+  transition: 0.2s;
+}
+
+.timer:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  color: #ff4d4d;
+}
+
+/* ===== FLOATING + ===== */
+
+#addTimer {
+  position: absolute;
+  bottom: 80px;
+  right: 20px;
+
+  width: 65px;
+  height: 65px;
+
+  border-radius: 50%;
+  border: none;
+
+  background: orange;
+  color: white;
+  font-size: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+/* ===== НИЖНЯЯ ПАНЕЛЬ ===== */
+
+.bottom-panel {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* ===== НАСТРОЙКИ ===== */
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.settings-header h3 {
+  margin: 0 auto;
+  color: white;
+}
+
+.settings-content {
+  padding: 20px;
+  color: white;
+}
+
+/* ===== АНИМАЦИИ ===== */
+
+.timer.new-timer {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: timerAppear 0.3s ease forwards;
+}
+
+@keyframes timerAppear {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== DARK ===== */
+
+body.dark {
+  background: #222;
+}
+
+body.dark .app-wrapper {
+  background: #333;
+}
+
+body.dark .timer {
+  background: #444;
+}
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+
+  padding: 10px 20px;
+  border-radius: 12px;
+
+  font-size: 14px;
+
+  opacity: 0;
+  pointer-events: none;
+
+  transition: 0.3s;
+}
+
+/* активное состояние */
+.toast.show {
+  opacity: 1;
+}
