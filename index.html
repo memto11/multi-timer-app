@@ -6,7 +6,7 @@
 
   <link rel="stylesheet" href="style.css" />
 
-  <!-- XLSX для Excel -->
+  <!-- XLSX -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 
@@ -20,10 +20,21 @@
 
   <div id="mainScreen" class="app">
 
+    <!-- Таймеры -->
     <div id="timers" class="timers-wrapper"></div>
 
+    <!-- 🔥 ПУСТОЕ СОСТОЯНИЕ -->
+    <div id="emptyState" class="empty-state">
+      <div class="empty-state-title">Нет таймеров</div>
+      <div class="empty-state-text">
+        Нажмите «+», чтобы добавить первый таймер
+      </div>
+    </div>
+
+    <!-- Кнопка добавления -->
     <button id="addTimer">+</button>
 
+    <!-- Нижняя панель -->
     <div class="bottom-panel">
       <div id="settings" class="settings-text-btn">Настройки</div>
       <div id="export" class="settings-text-btn">Экспорт в Excel</div>
@@ -45,7 +56,6 @@
 
     <div class="settings-card">
 
-      <!-- 🔥 НОВАЯ КНОПКА -->
       <button id="exportArchive" class="settings-btn">
         Выгрузить архив (7 дней)
       </button>
@@ -66,7 +76,7 @@
 </div>
 
 
-<!-- TOAST -->
+<!-- Toast -->
 <div id="toast" class="toast"></div>
 
 <script src="script.js"></script>

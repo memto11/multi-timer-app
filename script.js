@@ -1,4 +1,5 @@
 const timersContainer = document.getElementById("timers");
+const emptyState = document.getElementById("emptyState");
 const addBtn = document.getElementById("addTimer");
 const exportBtn = document.getElementById("export");
 const exportArchiveBtn = document.getElementById("exportArchive");
@@ -143,6 +144,21 @@ function renderTimers() {
     el.querySelector(".start-btn").onclick = (e) => {
       e.stopPropagation();
 
+      // 🔥 ПРОВЕРКА ЛИМИТА
+      if (!timer.isRunning) {
+        const activeCount = timers.filter(t => t.isRunning).length;
+
+        if (activeCount >= 2) {
+          showToast(`Активно уже ${activeCount} таймера. Максимум — 2`);
+          return;
+        }
+
+        // 🔒 фиксируем тип при первом старте
+        if (!timer.typeLocked) {
+          timer.typeLocked = true;
+        }
+      }
+
       // запись в архив при остановке
       if (timer.isRunning && timer.time > 0) {
         archive.push({
@@ -151,13 +167,7 @@ function renderTimers() {
           duration: timer.time,
           type: timer.type
         });
-
         saveArchive();
-      }
-
-      // блокировка типа
-      if (!timer.isRunning && !timer.typeLocked) {
-        timer.typeLocked = true;
       }
 
       timer.isRunning = !timer.isRunning;
@@ -214,6 +224,13 @@ function renderTimers() {
 
     timersContainer.appendChild(el);
   });
+
+  // EMPTY STATE
+  if (timers.length === 0) {
+    emptyState.classList.add("show");
+  } else {
+    emptyState.classList.remove("show");
+  }
 }
 
 // =====================
@@ -302,83 +319,7 @@ document.addEventListener("keydown", (e) => {
     e.preventDefault();
     undoDelete();
   }
-
 }, true);
-
-// =====================
-// EXPORT ТЕКУЩИХ
-// =====================
-
-exportBtn.addEventListener("click", () => {
-  const mainTasks = timers.filter(t => t.type === "main");
-  const extraTasks = timers.filter(t => t.type === "extra");
-
-  const data = [];
-
-  data.push(["Основные задачи"]);
-  mainTasks.forEach(t => {
-    data.push([t.name || "Без названия", formatTime(t.time)]);
-  });
-
-  data.push([]);
-
-  data.push(["Дополнительные задачи"]);
-  extraTasks.forEach(t => {
-    data.push([t.name || "Без названия", formatTime(t.time)]);
-  });
-
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(wb, ws, "Отчет");
-  XLSX.writeFile(wb, "weekly-report.xlsx");
-});
-
-// =====================
-// EXPORT АРХИВА
-// =====================
-
-function getLastWeekArchive() {
-  const now = new Date();
-  const weekAgo = new Date();
-  weekAgo.setDate(now.getDate() - 7);
-
-  return archive.filter(item => {
-    const date = new Date(item.date);
-    return date >= weekAgo && date <= now;
-  });
-}
-
-function exportArchive() {
-  const dataRaw = getLastWeekArchive();
-
-  const main = dataRaw.filter(i => i.type === "main");
-  const extra = dataRaw.filter(i => i.type === "extra");
-
-  const data = [];
-
-  data.push(["Основные задачи"]);
-  main.forEach(i => {
-    data.push([i.name, formatTime(i.duration), i.date]);
-  });
-
-  data.push([]);
-
-  data.push(["Дополнительные задачи"]);
-  extra.forEach(i => {
-    data.push([i.name, formatTime(i.duration), i.date]);
-  });
-
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(wb, ws, "Архив");
-  XLSX.writeFile(wb, "archive.xlsx");
-}
-
-exportArchiveBtn.onclick = () => {
-  exportArchive();
-};
 
 // =====================
 // TOAST
@@ -414,24 +355,7 @@ clearAllBtn.onclick = () => {
     renderTimers();
   }
 };
-// =====================
-// SAVE ON CLOSE 🔥
-// =====================
 
-window.addEventListener("beforeunload", () => {
-  timers.forEach(timer => {
-    if (timer.isRunning && timer.time > 0) {
-      archive.push({
-        date: new Date().toISOString().slice(0, 10),
-        name: timer.name || "Без названия",
-        duration: timer.time,
-        type: timer.type
-      });
-    }
-  });
-
-  saveArchive();
-});
 // =====================
 // INIT
 // =====================
