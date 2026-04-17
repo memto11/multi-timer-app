@@ -3,66 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <title>Multi Timer</title>
+
   <link rel="stylesheet" href="style.css" />
+
+  <!-- XLSX для Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
 
-  <div class="app-wrapper">
+<div class="app-wrapper">
 
-    <!-- ===== MAIN SCREEN ===== -->
-    <div id="mainScreen" class="app">
+  <!-- ===================== -->
+  <!-- ГЛАВНЫЙ ЭКРАН -->
+  <!-- ===================== -->
 
-      <!-- 🔥 ВАЖНО: grid сразу на этом контейнере -->
-      <div id="timers" class="timers-wrapper"></div>
+  <div id="mainScreen" class="app">
 
-      <!-- кнопка + -->
-      <button id="addTimer">+</button>
+    <div id="timers" class="timers-wrapper"></div>
 
-      <!-- нижняя панель -->
-      <div class="bottom-panel">
+    <button id="addTimer">+</button>
 
-        <!-- три точки -->
-       <button id="settings" class="settings-text-btn">
-  Настройки
-</button>
-
-        <!-- Excel -->
-        <button id="export" class="settings-text-btn">
-  Экспорт в Excel
-</button>
-
-      </div>
+    <div class="bottom-panel">
+      <div id="settings" class="settings-text-btn">Настройки</div>
+      <div id="export" class="settings-text-btn">Экспорт в Excel</div>
     </div>
 
-    <!-- ===== SETTINGS SCREEN ===== -->
-    <div id="settingsScreen" class="screen">
-
-  <div class="settings-header">
-    <button id="backBtn" class="back-btn">←</button>
-    <h2>Настройки</h2>
   </div>
 
-  <div class="settings-card">
 
-    <button id="clearAll" class="settings-btn danger">
-      Удалить все таймеры
-    </button>
+  <!-- ===================== -->
+  <!-- ЭКРАН НАСТРОЕК -->
+  <!-- ===================== -->
 
-    <p class="version">Версия 1.0 
-      <br>Разработано Бойцовым Александром
-    <br>via ChatGPT
-    </p>
+  <div id="settingsScreen" class="screen">
+
+    <div class="settings-header">
+      <button id="backBtn" class="back-btn">←</button>
+      <h2>Настройки</h2>
+    </div>
+
+    <div class="settings-card">
+
+      <!-- 🔥 НОВАЯ КНОПКА -->
+      <button id="exportArchive" class="settings-btn">
+        Выгрузить архив (7 дней)
+      </button>
+
+      <button id="clearAll" class="settings-btn danger">
+        Очистить все таймеры
+      </button>
+
+    </div>
+
+    <div class="version">
+      Версия 1.0<br>
+      Разработано Бойцовым Александром
+    </div>
 
   </div>
 
 </div>
 
-  <!-- XLSX -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-  <!-- твой JS -->
-  <script src="script.js"></script>
+<!-- TOAST -->
 <div id="toast" class="toast"></div>
+
+<script src="script.js"></script>
+
 </body>
 </html>

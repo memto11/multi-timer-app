@@ -1,6 +1,7 @@
 const timersContainer = document.getElementById("timers");
 const addBtn = document.getElementById("addTimer");
 const exportBtn = document.getElementById("export");
+const exportArchiveBtn = document.getElementById("exportArchive");
 
 // экраны
 const body = document.body;
@@ -14,6 +15,7 @@ const MAX_TIMERS = 10;
 
 let timers = [];
 let deletedTimers = [];
+let archive = [];
 
 // =====================
 // STORAGE
@@ -26,6 +28,15 @@ function loadTimers() {
 
 function saveTimers() {
   localStorage.setItem("timers", JSON.stringify(timers));
+}
+
+function loadArchive() {
+  const data = localStorage.getItem("archive");
+  if (data) archive = JSON.parse(data);
+}
+
+function saveArchive() {
+  localStorage.setItem("archive", JSON.stringify(archive));
 }
 
 // =====================
@@ -47,7 +58,7 @@ function createTimer() {
     time: 0,
     isRunning: false,
     type: "main",
-    typeLocked: false // 🔥 ключевая штука
+    typeLocked: false
   };
 
   timers.push(timer);
@@ -97,11 +108,7 @@ function renderTimers() {
 
     el.innerHTML = `
       <div class="timer-top">
-        <input 
-          class="timer-name" 
-          value="${timer.name}" 
-          placeholder="Название"
-        />
+        <input class="timer-name" value="${timer.name}" placeholder="Название"/>
         <button class="delete-btn">✕</button>
       </div>
 
@@ -121,8 +128,7 @@ function renderTimers() {
       </button>
     `;
 
-    // ===== DRAG =====
-
+    // DRAG
     el.addEventListener("dragstart", () => {
       el.classList.add("dragging");
     });
@@ -133,12 +139,23 @@ function renderTimers() {
       saveTimers();
     });
 
-    // ===== СТАРТ / ПАУЗА =====
-
+    // СТАРТ / ПАУЗА
     el.querySelector(".start-btn").onclick = (e) => {
       e.stopPropagation();
 
-      // 🔥 фиксируем тип при первом старте
+      // запись в архив при остановке
+      if (timer.isRunning && timer.time > 0) {
+        archive.push({
+          date: new Date().toISOString().slice(0, 10),
+          name: timer.name || "Без названия",
+          duration: timer.time,
+          type: timer.type
+        });
+
+        saveArchive();
+      }
+
+      // блокировка типа
       if (!timer.isRunning && !timer.typeLocked) {
         timer.typeLocked = true;
       }
@@ -149,13 +166,11 @@ function renderTimers() {
       renderTimers();
     };
 
-    // ===== УДАЛЕНИЕ =====
-
+    // УДАЛЕНИЕ
     el.querySelector(".delete-btn").onclick = (e) => {
       e.stopPropagation();
 
       deletedTimers.push(timer);
-
       timers = timers.filter(t => t.id !== timer.id);
 
       saveTimers();
@@ -164,8 +179,7 @@ function renderTimers() {
       showToast("Таймер удалён (Ctrl + Z — отменить)");
     };
 
-    // ===== INPUT =====
-
+    // INPUT
     const input = el.querySelector(".timer-name");
 
     input.onclick = (e) => e.stopPropagation();
@@ -175,11 +189,9 @@ function renderTimers() {
       saveTimers();
     };
 
-    // ===== 🔥 ТИП ЗАДАЧ =====
-
+    // ТИП
     const typeButtons = el.querySelectorAll(".type-btn");
 
-    // 🔒 визуальная блокировка
     if (timer.typeLocked) {
       typeButtons.forEach(btn => btn.classList.add("disabled"));
     }
@@ -227,7 +239,7 @@ timersContainer.addEventListener("dragover", (e) => {
 });
 
 // =====================
-// UPDATE ORDER
+// ORDER
 // =====================
 
 function updateTimersOrder() {
@@ -294,7 +306,7 @@ document.addEventListener("keydown", (e) => {
 }, true);
 
 // =====================
-// EXPORT
+// EXPORT ТЕКУЩИХ
 // =====================
 
 exportBtn.addEventListener("click", () => {
@@ -321,6 +333,52 @@ exportBtn.addEventListener("click", () => {
   XLSX.utils.book_append_sheet(wb, ws, "Отчет");
   XLSX.writeFile(wb, "weekly-report.xlsx");
 });
+
+// =====================
+// EXPORT АРХИВА
+// =====================
+
+function getLastWeekArchive() {
+  const now = new Date();
+  const weekAgo = new Date();
+  weekAgo.setDate(now.getDate() - 7);
+
+  return archive.filter(item => {
+    const date = new Date(item.date);
+    return date >= weekAgo && date <= now;
+  });
+}
+
+function exportArchive() {
+  const dataRaw = getLastWeekArchive();
+
+  const main = dataRaw.filter(i => i.type === "main");
+  const extra = dataRaw.filter(i => i.type === "extra");
+
+  const data = [];
+
+  data.push(["Основные задачи"]);
+  main.forEach(i => {
+    data.push([i.name, formatTime(i.duration), i.date]);
+  });
+
+  data.push([]);
+
+  data.push(["Дополнительные задачи"]);
+  extra.forEach(i => {
+    data.push([i.name, formatTime(i.duration), i.date]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(wb, ws, "Архив");
+  XLSX.writeFile(wb, "archive.xlsx");
+}
+
+exportArchiveBtn.onclick = () => {
+  exportArchive();
+};
 
 // =====================
 // TOAST
@@ -356,10 +414,28 @@ clearAllBtn.onclick = () => {
     renderTimers();
   }
 };
+// =====================
+// SAVE ON CLOSE 🔥
+// =====================
 
+window.addEventListener("beforeunload", () => {
+  timers.forEach(timer => {
+    if (timer.isRunning && timer.time > 0) {
+      archive.push({
+        date: new Date().toISOString().slice(0, 10),
+        name: timer.name || "Без названия",
+        duration: timer.time,
+        type: timer.type
+      });
+    }
+  });
+
+  saveArchive();
+});
 // =====================
 // INIT
 // =====================
 
 loadTimers();
+loadArchive();
 renderTimers();
