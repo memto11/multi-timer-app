@@ -1,25 +1,30 @@
-const path = require("path");
 const { app, BrowserWindow } = require("electron");
-require('electron-reload')(__dirname, {
-  electron: require(`${__dirname}/node_modules/electron`)
-});
+const path = require("path");
+
+// только для разработки
+if (!app.isPackaged) {
+  require("electron-reload")(__dirname, {
+    electron: require(`${__dirname}/node_modules/electron`)
+  });
+}
+
 function createWindow() {
   const win = new BrowserWindow({
-  width: 400,
-  height: 700,
+    width: 400,
+    height: 700,
 
-  minWidth: 400,
-  minHeight: 500,
+    minWidth: 400,
+    minHeight: 500,
 
-  resizable: true,
-  autoHideMenuBar: true,
+    resizable: true,
+    autoHideMenuBar: true,
 
-  icon: path.join(__dirname, "icon.ico"), // 🔥 ВОТ ЭТО
+    icon: path.join(__dirname, "icon.ico"),
 
-  webPreferences: {
-    contextIsolation: true
-  }
-});
+    webPreferences: {
+      contextIsolation: true
+    }
+  });
 
   win.loadFile("index.html");
 }
