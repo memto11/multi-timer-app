@@ -3,22 +3,43 @@
   "version": "1.0.0",
   "description": "Multi timer app",
   "main": "main.js",
-  "author": "",
+  "author": "Александр Бойцов",
   "license": "ISC",
+
   "scripts": {
     "start": "electron .",
     "build": "electron-builder"
   },
+
   "devDependencies": {
     "electron": "^30.0.0",
-    "electron-builder": "^24.0.0",
+    "electron-builder": "^24.13.3",
     "electron-reload": "^2.0.0-alpha.1"
   },
+
   "build": {
     "appId": "com.multitimer.app",
     "productName": "Multi Timer",
+
+    "directories": {
+      "output": "dist"
+    },
+
+    "files": [
+      "**/*",
+      "!node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!node_modules/*.d.ts"
+    ],
+
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     }
   }
 }
