@@ -5,18 +5,12 @@ const exportBtn = document.getElementById("export");
 const exportArchiveBtn = document.getElementById("exportArchive");
 const clearArchiveBtn = document.getElementById("clearArchive");
 
-// экраны
 const body = document.body;
 const settingsBtn = document.getElementById("settings");
 const backBtn = document.getElementById("backBtn");
-
-// настройки
 const clearAllBtn = document.getElementById("clearAll");
 
-const MAX_TIMERS = 10;
-
 let timers = [];
-let deletedTimers = [];
 let archive = [];
 
 // =====================
@@ -45,12 +39,7 @@ function saveArchive() {
 // CREATE TIMER
 // =====================
 
-addBtn.addEventListener("click", () => {
-  if (timers.length >= MAX_TIMERS) {
-    showToast(`Максимум ${MAX_TIMERS} таймеров`);
-    return;
-  }
-
+addBtn.onclick = () => {
   const timer = {
     id: Date.now(),
     name: "",
@@ -63,7 +52,7 @@ addBtn.addEventListener("click", () => {
   timers.push(timer);
   saveTimers();
   renderTimers();
-});
+};
 
 // =====================
 // TIME
@@ -94,15 +83,13 @@ function renderTimers() {
     const el = document.createElement("div");
     el.className = "timer";
     el.dataset.id = timer.id;
+    el.setAttribute("data-type", timer.type);
+    el.draggable = true;
 
     if (timer.isRunning) el.classList.add("active");
 
     el.innerHTML = `
-      <div class="timer-top">
-        <input class="timer-name" value="${timer.name}" placeholder="Название"/>
-        <button class="delete-btn">✕</button>
-      </div>
-
+      <input class="timer-name" value="${timer.name}" placeholder="Название"/>
       <div class="timer-time">${formatTime(timer.time)}</div>
 
       <div class="timer-type">
@@ -110,14 +97,13 @@ function renderTimers() {
         <button class="type-btn ${timer.type === "extra" ? "active" : ""}" data-type="extra">Дополнительная</button>
       </div>
 
-      <button class="start-btn">
-        ${timer.isRunning ? "❚❚" : "▶"}
-      </button>
+      <button class="start-btn">${timer.isRunning ? "❚❚" : "▶"}</button>
+      <button class="delete-btn">✕</button>
     `;
 
     const input = el.querySelector(".timer-name");
 
-    // ===== START / STOP =====
+    // START / STOP
     el.querySelector(".start-btn").onclick = () => {
 
       if (!timer.isRunning && !(timer.name || "").trim()) {
@@ -126,17 +112,29 @@ function renderTimers() {
         return;
       }
 
+      // автопауза
       if (!timer.isRunning) {
-        const activeCount = timers.filter(t => t.isRunning).length;
+        timers.forEach(t => {
+          if (t.id !== timer.id && t.isRunning) {
 
-        if (activeCount >= 2) {
-          showToast(`Активно уже ${activeCount} таймера. Максимум — 2`);
-          return;
-        }
+            if (t.time > 0) {
+              archive.push({
+                date: new Date().toISOString().slice(0, 10),
+                name: t.name,
+                duration: t.time,
+                type: t.type
+              });
+            }
 
+            t.isRunning = false;
+          }
+        });
+
+        saveArchive();
         timer.typeLocked = true;
       }
 
+      // запись в архив
       if (timer.isRunning && timer.time > 0) {
         archive.push({
           date: new Date().toISOString().slice(0, 10),
@@ -148,26 +146,25 @@ function renderTimers() {
       }
 
       timer.isRunning = !timer.isRunning;
+
       saveTimers();
       renderTimers();
     };
 
-    // ===== DELETE =====
+    // DELETE
     el.querySelector(".delete-btn").onclick = () => {
-      deletedTimers.push(timer);
       timers = timers.filter(t => t.id !== timer.id);
       saveTimers();
       renderTimers();
-      showToast("Таймер удалён");
     };
 
-    // ===== INPUT =====
+    // INPUT
     input.oninput = (e) => {
       timer.name = e.target.value;
       saveTimers();
     };
 
-    // ===== TYPE =====
+    // TYPE
     const typeButtons = el.querySelectorAll(".type-btn");
 
     if (timer.typeLocked) {
@@ -177,7 +174,7 @@ function renderTimers() {
     typeButtons.forEach(btn => {
       btn.onclick = () => {
         if (timer.typeLocked) {
-          showToast("Тип задачи зафиксирован");
+          showToast("Тип зафиксирован");
           return;
         }
 
@@ -187,14 +184,59 @@ function renderTimers() {
       };
     });
 
+    // DRAG
+    el.addEventListener("dragstart", () => {
+      el.classList.add("dragging");
+    });
+
+    el.addEventListener("dragend", () => {
+      el.classList.remove("dragging");
+      updateTimersOrder();
+      saveTimers();
+    });
+
     timersContainer.appendChild(el);
   });
 
-  emptyState.style.display = timers.length ? "none" : "flex";
+  emptyState.classList.toggle("show", timers.length === 0);
 }
 
 // =====================
-// GLOBAL TIMER
+// DRAG LOGIC
+// =====================
+
+timersContainer.addEventListener("dragover", (e) => {
+  e.preventDefault();
+
+  const dragging = document.querySelector(".dragging");
+  const elements = [...timersContainer.querySelectorAll(".timer:not(.dragging)")];
+
+  const next = elements.find(el => {
+    const rect = el.getBoundingClientRect();
+    return e.clientY < rect.top + rect.height / 2;
+  });
+
+  if (next) {
+    timersContainer.insertBefore(dragging, next);
+  } else {
+    timersContainer.appendChild(dragging);
+  }
+});
+
+function updateTimersOrder() {
+  const newOrder = [];
+
+  document.querySelectorAll(".timer").forEach(el => {
+    const id = Number(el.dataset.id);
+    const timer = timers.find(t => t.id === id);
+    if (timer) newOrder.push(timer);
+  });
+
+  timers = newOrder;
+}
+
+// =====================
+// TIMER LOOP (FIXED)
 // =====================
 
 setInterval(() => {
@@ -202,128 +244,9 @@ setInterval(() => {
     if (t.isRunning) t.time++;
   });
 
-  updateTimes();
+  updateTimes(); // 🔥 ВАЖНО: вместо renderTimers
   saveTimers();
 }, 1000);
-
-// =====================
-// EXPORT ТЕКУЩИХ
-// =====================
-
-exportBtn.onclick = () => {
-  if (timers.length === 0) {
-    showToast("Нет данных для экспорта");
-    return;
-  }
-
-  const main = timers.filter(t => t.type === "main");
-  const extra = timers.filter(t => t.type === "extra");
-
-  const data = [];
-
-  data.push(["Плановые задачи"]);
-  data.push(["Задача", "Время"]);
-
-  main.forEach(t => data.push([t.name, formatTime(t.time)]));
-
-  data.push([]);
-
-  data.push(["Дополнительные задачи"]);
-  data.push(["Задача", "Время"]);
-
-  extra.forEach(t => data.push([t.name, formatTime(t.time)]));
-
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(wb, ws, "Отчет");
-  XLSX.writeFile(wb, "report.xlsx");
-};
-
-// =====================
-// EXPORT ARCHIVE
-// =====================
-
-exportArchiveBtn.onclick = () => {
-  if (!archive.length) {
-    showToast("Архив пуст");
-    return;
-  }
-
-  const now = new Date();
-  const weekAgo = new Date();
-  weekAgo.setDate(now.getDate() - 7);
-
-  const filtered = archive.filter(i => {
-    const d = new Date(i.date);
-    return d >= weekAgo && d <= now;
-  });
-
-  if (!filtered.length) {
-    showToast("Нет данных за 7 дней");
-    return;
-  }
-
-  const main = filtered.filter(i => i.type === "main");
-  const extra = filtered.filter(i => i.type === "extra");
-
-  const data = [];
-
-  data.push(["Плановые задачи"]);
-  data.push(["Задача", "Время", "Дата"]);
-
-  main.forEach(i => {
-    data.push([i.name, formatTime(i.duration), i.date]);
-  });
-
-  data.push([]);
-
-  data.push(["Дополнительные задачи"]);
-  data.push(["Задача", "Время", "Дата"]);
-
-  extra.forEach(i => {
-    data.push([i.name, formatTime(i.duration), i.date]);
-  });
-
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(wb, ws, "Архив");
-  XLSX.writeFile(wb, "archive.xlsx");
-};
-
-// =====================
-// CLEAR ARCHIVE
-// =====================
-
-clearArchiveBtn.onclick = () => {
-  if (!archive.length) {
-    showToast("Архив уже пуст");
-    return;
-  }
-
-  if (!confirm("Очистить весь архив?")) return;
-
-  archive = [];
-  saveArchive();
-
-  showToast("Архив очищен");
-};
-
-// =====================
-// TOAST
-// =====================
-
-function showToast(message) {
-  const toast = document.getElementById("toast");
-
-  toast.textContent = message;
-  toast.classList.add("show");
-
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2000);
-}
 
 // =====================
 // SETTINGS
@@ -339,6 +262,18 @@ clearAllBtn.onclick = () => {
     renderTimers();
   }
 };
+
+// =====================
+// TOAST
+// =====================
+
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.classList.add("show");
+
+  setTimeout(() => toast.classList.remove("show"), 2000);
+}
 
 // =====================
 // INIT
