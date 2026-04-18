@@ -97,13 +97,16 @@ function renderTimers() {
         <button class="type-btn ${timer.type === "extra" ? "active" : ""}" data-type="extra">Дополнительная</button>
       </div>
 
-      <button class="start-btn">${timer.isRunning ? "❚❚" : "▶"}</button>
+      <button class="start-btn ${timer.isRunning ? "pause" : ""}">
+        ${timer.isRunning ? "❚❚" : "▶"}
+      </button>
+
       <button class="delete-btn">✕</button>
     `;
 
     const input = el.querySelector(".timer-name");
 
-    // START / STOP
+    // ===== START / STOP =====
     el.querySelector(".start-btn").onclick = () => {
 
       if (!timer.isRunning && !(timer.name || "").trim()) {
@@ -134,7 +137,7 @@ function renderTimers() {
         timer.typeLocked = true;
       }
 
-      // запись в архив
+      // запись при остановке
       if (timer.isRunning && timer.time > 0) {
         archive.push({
           date: new Date().toISOString().slice(0, 10),
@@ -151,20 +154,20 @@ function renderTimers() {
       renderTimers();
     };
 
-    // DELETE
+    // ===== DELETE =====
     el.querySelector(".delete-btn").onclick = () => {
       timers = timers.filter(t => t.id !== timer.id);
       saveTimers();
       renderTimers();
     };
 
-    // INPUT
+    // ===== INPUT =====
     input.oninput = (e) => {
       timer.name = e.target.value;
       saveTimers();
     };
 
-    // TYPE
+    // ===== TYPE =====
     const typeButtons = el.querySelectorAll(".type-btn");
 
     if (timer.typeLocked) {
@@ -184,7 +187,7 @@ function renderTimers() {
       };
     });
 
-    // DRAG
+    // ===== DRAG =====
     el.addEventListener("dragstart", () => {
       el.classList.add("dragging");
     });
@@ -236,7 +239,7 @@ function updateTimersOrder() {
 }
 
 // =====================
-// TIMER LOOP (FIXED)
+// TIMER LOOP
 // =====================
 
 setInterval(() => {
@@ -244,16 +247,120 @@ setInterval(() => {
     if (t.isRunning) t.time++;
   });
 
-  updateTimes(); // 🔥 ВАЖНО: вместо renderTimers
+  updateTimes(); // 🔥 фикс дергания
   saveTimers();
 }, 1000);
+
+// =====================
+// EXPORT
+// =====================
+
+exportBtn.onclick = () => {
+  if (timers.length === 0) {
+    showToast("Нет данных для экспорта");
+    return;
+  }
+
+  const main = timers.filter(t => t.type === "main");
+  const extra = timers.filter(t => t.type === "extra");
+
+  const data = [];
+
+  data.push(["Плановые задачи"]);
+  data.push(["Задача", "Время"]);
+
+  main.forEach(t => {
+    data.push([t.name || "Без названия", formatTime(t.time)]);
+  });
+
+  data.push([]);
+  data.push(["Дополнительные задачи"]);
+  data.push(["Задача", "Время"]);
+
+  extra.forEach(t => {
+    data.push([t.name || "Без названия", formatTime(t.time)]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(wb, ws, "Отчет");
+  XLSX.writeFile(wb, "report.xlsx");
+};
+
+exportArchiveBtn.onclick = () => {
+  if (!archive.length) {
+    showToast("Архив пуст");
+    return;
+  }
+
+  const now = new Date();
+  const weekAgo = new Date();
+  weekAgo.setDate(now.getDate() - 7);
+
+  const filtered = archive.filter(i => {
+    const d = new Date(i.date);
+    return d >= weekAgo && d <= now;
+  });
+
+  if (!filtered.length) {
+    showToast("Нет данных за 7 дней");
+    return;
+  }
+
+  const main = filtered.filter(i => i.type === "main");
+  const extra = filtered.filter(i => i.type === "extra");
+
+  const data = [];
+
+  data.push(["Плановые задачи"]);
+  data.push(["Задача", "Время", "Дата"]);
+
+  main.forEach(i => {
+    data.push([i.name, formatTime(i.duration), i.date]);
+  });
+
+  data.push([]);
+
+  data.push(["Дополнительные задачи"]);
+  data.push(["Задача", "Время", "Дата"]);
+
+  extra.forEach(i => {
+    data.push([i.name, formatTime(i.duration), i.date]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(wb, ws, "Архив");
+  XLSX.writeFile(wb, "archive.xlsx");
+};
+
+// =====================
+// CLEAR ARCHIVE
+// =====================
+
+clearArchiveBtn.onclick = () => {
+  if (!archive.length) return showToast("Архив пуст");
+
+  if (!confirm("Очистить архив?")) return;
+
+  archive = [];
+  saveArchive();
+  showToast("Архив очищен");
+};
 
 // =====================
 // SETTINGS
 // =====================
 
-settingsBtn.onclick = () => body.classList.add("show-settings");
-backBtn.onclick = () => body.classList.remove("show-settings");
+settingsBtn.onclick = () => {
+  body.classList.add("show-settings");
+};
+
+backBtn.onclick = () => {
+  body.classList.remove("show-settings");
+};
 
 clearAllBtn.onclick = () => {
   if (confirm("Удалить все таймеры?")) {
