@@ -3,6 +3,7 @@ const emptyState = document.getElementById("emptyState");
 const addBtn = document.getElementById("addTimer");
 const exportBtn = document.getElementById("export");
 const exportArchiveBtn = document.getElementById("exportArchive");
+const clearArchiveBtn = document.getElementById("clearArchive");
 
 // экраны
 const body = document.body;
@@ -49,10 +50,7 @@ addBtn.addEventListener("click", () => {
     showToast(`Максимум ${MAX_TIMERS} таймеров`);
     return;
   }
-  createTimer();
-});
 
-function createTimer() {
   const timer = {
     id: Date.now(),
     name: "",
@@ -65,29 +63,23 @@ function createTimer() {
   timers.push(timer);
   saveTimers();
   renderTimers();
-
-  setTimeout(() => {
-    const input = document.querySelector(`[data-id="${timer.id}"] .timer-name`);
-    if (input) input.focus();
-  }, 0);
-}
+});
 
 // =====================
 // TIME
 // =====================
 
 function formatTime(seconds) {
-  const hrs = String(Math.floor(seconds / 3600)).padStart(2, "0");
-  const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
-  const secs = String(seconds % 60).padStart(2, "0");
-
-  return `${hrs}:${mins}:${secs}`;
+  const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
+  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+  const s = String(seconds % 60).padStart(2, "0");
+  return `${h}:${m}:${s}`;
 }
 
 function updateTimes() {
-  timers.forEach(timer => {
-    const el = document.querySelector(`[data-id="${timer.id}"] .timer-time`);
-    if (el) el.textContent = formatTime(timer.time);
+  timers.forEach(t => {
+    const el = document.querySelector(`[data-id="${t.id}"] .timer-time`);
+    if (el) el.textContent = formatTime(t.time);
   });
 }
 
@@ -101,9 +93,7 @@ function renderTimers() {
   timers.forEach(timer => {
     const el = document.createElement("div");
     el.className = "timer";
-    el.setAttribute("data-id", timer.id);
-    el.setAttribute("data-type", timer.type);
-    el.draggable = true;
+    el.dataset.id = timer.id;
 
     if (timer.isRunning) el.classList.add("active");
 
@@ -116,35 +106,26 @@ function renderTimers() {
       <div class="timer-time">${formatTime(timer.time)}</div>
 
       <div class="timer-type">
-        <button class="type-btn ${timer.type === "main" ? "active" : ""}" data-type="main">
-          Плановая
-        </button>
-        <button class="type-btn ${timer.type === "extra" ? "active" : ""}" data-type="extra">
-          Дополнительная
-        </button>
+        <button class="type-btn ${timer.type === "main" ? "active" : ""}" data-type="main">Плановая</button>
+        <button class="type-btn ${timer.type === "extra" ? "active" : ""}" data-type="extra">Дополнительная</button>
       </div>
 
-      <button class="start-btn ${timer.isRunning ? "pause" : ""}">
+      <button class="start-btn">
         ${timer.isRunning ? "❚❚" : "▶"}
       </button>
     `;
 
-    // DRAG
-    el.addEventListener("dragstart", () => {
-      el.classList.add("dragging");
-    });
+    const input = el.querySelector(".timer-name");
 
-    el.addEventListener("dragend", () => {
-      el.classList.remove("dragging");
-      updateTimersOrder();
-      saveTimers();
-    });
+    // ===== START / STOP =====
+    el.querySelector(".start-btn").onclick = () => {
 
-    // СТАРТ / ПАУЗА
-    el.querySelector(".start-btn").onclick = (e) => {
-      e.stopPropagation();
+      if (!timer.isRunning && !(timer.name || "").trim()) {
+        showToast("Введите название задачи");
+        input.focus();
+        return;
+      }
 
-      // 🔥 ПРОВЕРКА ЛИМИТА
       if (!timer.isRunning) {
         const activeCount = timers.filter(t => t.isRunning).length;
 
@@ -153,17 +134,13 @@ function renderTimers() {
           return;
         }
 
-        // 🔒 фиксируем тип при первом старте
-        if (!timer.typeLocked) {
-          timer.typeLocked = true;
-        }
+        timer.typeLocked = true;
       }
 
-      // запись в архив при остановке
       if (timer.isRunning && timer.time > 0) {
         archive.push({
           date: new Date().toISOString().slice(0, 10),
-          name: timer.name || "Без названия",
+          name: timer.name,
           duration: timer.time,
           type: timer.type
         });
@@ -171,35 +148,26 @@ function renderTimers() {
       }
 
       timer.isRunning = !timer.isRunning;
-
       saveTimers();
       renderTimers();
     };
 
-    // УДАЛЕНИЕ
-    el.querySelector(".delete-btn").onclick = (e) => {
-      e.stopPropagation();
-
+    // ===== DELETE =====
+    el.querySelector(".delete-btn").onclick = () => {
       deletedTimers.push(timer);
       timers = timers.filter(t => t.id !== timer.id);
-
       saveTimers();
       renderTimers();
-
-      showToast("Таймер удалён (Ctrl + Z — отменить)");
+      showToast("Таймер удалён");
     };
 
-    // INPUT
-    const input = el.querySelector(".timer-name");
-
-    input.onclick = (e) => e.stopPropagation();
-
+    // ===== INPUT =====
     input.oninput = (e) => {
       timer.name = e.target.value;
       saveTimers();
     };
 
-    // ТИП
+    // ===== TYPE =====
     const typeButtons = el.querySelectorAll(".type-btn");
 
     if (timer.typeLocked) {
@@ -207,68 +175,22 @@ function renderTimers() {
     }
 
     typeButtons.forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-
+      btn.onclick = () => {
         if (timer.typeLocked) {
-          showToast("Тип задачи уже зафиксирован");
+          showToast("Тип задачи зафиксирован");
           return;
         }
 
         timer.type = btn.dataset.type;
-
         saveTimers();
         renderTimers();
-      });
+      };
     });
 
     timersContainer.appendChild(el);
   });
 
-  // EMPTY STATE
-  if (timers.length === 0) {
-    emptyState.classList.add("show");
-  } else {
-    emptyState.classList.remove("show");
-  }
-}
-
-// =====================
-// DRAG
-// =====================
-
-timersContainer.addEventListener("dragover", (e) => {
-  e.preventDefault();
-
-  const draggingEl = document.querySelector(".dragging");
-  const elements = [...timersContainer.querySelectorAll(".timer:not(.dragging)")];
-
-  const nextEl = elements.find(el => {
-    const rect = el.getBoundingClientRect();
-    return e.clientY < rect.top + rect.height / 2;
-  });
-
-  if (nextEl) {
-    timersContainer.insertBefore(draggingEl, nextEl);
-  } else {
-    timersContainer.appendChild(draggingEl);
-  }
-});
-
-// =====================
-// ORDER
-// =====================
-
-function updateTimersOrder() {
-  const newOrder = [];
-
-  document.querySelectorAll(".timer").forEach(el => {
-    const id = Number(el.dataset.id);
-    const timer = timers.find(t => t.id === id);
-    if (timer) newOrder.push(timer);
-  });
-
-  timers = newOrder;
+  emptyState.style.display = timers.length ? "none" : "flex";
 }
 
 // =====================
@@ -285,41 +207,108 @@ setInterval(() => {
 }, 1000);
 
 // =====================
-// UNDO
+// EXPORT ТЕКУЩИХ
 // =====================
 
-function undoDelete() {
-  if (deletedTimers.length === 0) return;
-
-  const last = deletedTimers.pop();
-  timers.push(last);
-
-  saveTimers();
-  renderTimers();
-
-  showToast("Таймер восстановлен");
-}
-
-document.addEventListener("keydown", (e) => {
-  const isUndo = (e.ctrlKey || e.metaKey) && e.code === "KeyZ";
-
-  if (!isUndo) return;
-
-  const activeEl = document.activeElement;
-
-  const isInputFocused =
-    activeEl &&
-    (
-      activeEl.tagName === "INPUT" ||
-      activeEl.tagName === "TEXTAREA" ||
-      activeEl.isContentEditable
-    );
-
-  if (!isInputFocused) {
-    e.preventDefault();
-    undoDelete();
+exportBtn.onclick = () => {
+  if (timers.length === 0) {
+    showToast("Нет данных для экспорта");
+    return;
   }
-}, true);
+
+  const main = timers.filter(t => t.type === "main");
+  const extra = timers.filter(t => t.type === "extra");
+
+  const data = [];
+
+  data.push(["Плановые задачи"]);
+  data.push(["Задача", "Время"]);
+
+  main.forEach(t => data.push([t.name, formatTime(t.time)]));
+
+  data.push([]);
+
+  data.push(["Дополнительные задачи"]);
+  data.push(["Задача", "Время"]);
+
+  extra.forEach(t => data.push([t.name, formatTime(t.time)]));
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(wb, ws, "Отчет");
+  XLSX.writeFile(wb, "report.xlsx");
+};
+
+// =====================
+// EXPORT ARCHIVE
+// =====================
+
+exportArchiveBtn.onclick = () => {
+  if (!archive.length) {
+    showToast("Архив пуст");
+    return;
+  }
+
+  const now = new Date();
+  const weekAgo = new Date();
+  weekAgo.setDate(now.getDate() - 7);
+
+  const filtered = archive.filter(i => {
+    const d = new Date(i.date);
+    return d >= weekAgo && d <= now;
+  });
+
+  if (!filtered.length) {
+    showToast("Нет данных за 7 дней");
+    return;
+  }
+
+  const main = filtered.filter(i => i.type === "main");
+  const extra = filtered.filter(i => i.type === "extra");
+
+  const data = [];
+
+  data.push(["Плановые задачи"]);
+  data.push(["Задача", "Время", "Дата"]);
+
+  main.forEach(i => {
+    data.push([i.name, formatTime(i.duration), i.date]);
+  });
+
+  data.push([]);
+
+  data.push(["Дополнительные задачи"]);
+  data.push(["Задача", "Время", "Дата"]);
+
+  extra.forEach(i => {
+    data.push([i.name, formatTime(i.duration), i.date]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(wb, ws, "Архив");
+  XLSX.writeFile(wb, "archive.xlsx");
+};
+
+// =====================
+// CLEAR ARCHIVE
+// =====================
+
+clearArchiveBtn.onclick = () => {
+  if (!archive.length) {
+    showToast("Архив уже пуст");
+    return;
+  }
+
+  if (!confirm("Очистить весь архив?")) return;
+
+  archive = [];
+  saveArchive();
+
+  showToast("Архив очищен");
+};
 
 // =====================
 // TOAST
@@ -340,13 +329,8 @@ function showToast(message) {
 // SETTINGS
 // =====================
 
-settingsBtn.onclick = () => {
-  body.classList.add("show-settings");
-};
-
-backBtn.onclick = () => {
-  body.classList.remove("show-settings");
-};
+settingsBtn.onclick = () => body.classList.add("show-settings");
+backBtn.onclick = () => body.classList.remove("show-settings");
 
 clearAllBtn.onclick = () => {
   if (confirm("Удалить все таймеры?")) {
