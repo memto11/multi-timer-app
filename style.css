@@ -114,9 +114,11 @@ body {
 }
 
 .timer.active {
-  border: 2px solid var(--accent);
+  border: 2px solid var(--accent) !important;
   box-shadow: 0 0 20px rgba(229,57,53,0.25);
+  
 }
+
 
 /* 🔥 подсветка доп задач */
 .timer[data-type="extra"] {

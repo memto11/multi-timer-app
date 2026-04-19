@@ -93,5 +93,5 @@ ipcMain.handle("save-file", async (_, defaultName) => {
     ]
   });
 
-  return result.filePath;
+ return result.canceled ? null : result.filePath;
 });
