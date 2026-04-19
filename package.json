@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Multi timer app",
   "main": "main.js",
-  "author": "Александр Бойцов",
+  "author": "Aleksandr Boitsov",
   "license": "ISC",
 
   "scripts": {
@@ -18,19 +18,21 @@
   },
 
   "build": {
-    "appId": "com.multitimer.app",
-    "productName": "Multi Timer",
+"appId": "com.multitimer.app",
+"productName": "Multi Timer",
+"npmRebuild": false,
+"buildDependenciesFromSource": false,
+    
 
     "directories": {
-      "output": "dist"
-    },
-
-    "files": [
-      "**/*",
-      "!node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
-      "!node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
-      "!node_modules/*.d.ts"
-    ],
+  "output": "dist"},
+  "files": [
+      "index.html",
+      "script.js",
+      "style.css",
+      "main.js",
+      "icon.ico"
+],
 
     "win": {
       "target": "nsis",
