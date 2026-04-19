@@ -1,6 +1,6 @@
 {
   "name": "multi-timer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Multi timer app",
   "main": "main.js",
   "author": "Aleksandr Boitsov",
@@ -24,12 +24,12 @@
       "output": "dist"
     },
     "publish": [
-  {
-    "provider": "github",
-    "owner": "memto11",
-    "repo": "multi-timer-app"
-  }
-],
+      {
+        "provider": "github",
+        "owner": "memto11",
+        "repo": "multi-timer-app"
+      }
+    ],
     "files": [
       "index.html",
       "script.js",
@@ -45,9 +45,9 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
-
   },
   "dependencies": {
-    "electron-updater": "^6.8.3"
+    "electron-updater": "^6.8.3",
+    "xlsx": "^0.18.5"
   }
 }

@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
+const { dialog } = require("electron");
 
 
 // только для разработки
@@ -82,4 +83,15 @@ ipcMain.on("install_update", () => {
 
 ipcMain.on("check_updates", () => {
   autoUpdater.checkForUpdates();
+});
+
+ipcMain.handle("save-file", async (_, defaultName) => {
+  const result = await dialog.showSaveDialog({
+    defaultPath: defaultName,
+    filters: [
+      { name: "Excel", extensions: ["xlsx"] }
+    ]
+  });
+
+  return result.filePath;
 });

@@ -10,6 +10,7 @@ const settingsBtn = document.getElementById("settings");
 const backBtn = document.getElementById("backBtn");
 const clearAllBtn = document.getElementById("clearAll");
 const checkUpdateBtn = document.getElementById("checkUpdates");
+const XLSX = require("xlsx");
 
 let timers = [];
 let archive = [];
@@ -256,85 +257,78 @@ setInterval(() => {
 // EXPORT
 // =====================
 
-exportBtn.onclick = () => {
-  if (timers.length === 0) {
-    showToast("Нет данных для экспорта");
-    return;
+exportBtn.onclick = async () => {
+  try {
+    if (!timers.length) {
+      showToast("Нет данных для экспорта");
+      return;
+    }
+
+    const filePath = await ipcRenderer.invoke("save-file", "report.xlsx");
+
+    if (!filePath) return; // отмена
+
+    const main = timers.filter(t => t.type === "main");
+    const extra = timers.filter(t => t.type === "extra");
+
+    const data = [];
+
+    data.push(["Плановые задачи"]);
+    data.push(["Задача", "Время"]);
+
+    main.forEach(t => {
+      data.push([t.name || "Без названия", formatTime(t.time)]);
+    });
+
+    data.push([]);
+    data.push(["Дополнительные задачи"]);
+    data.push(["Задача", "Время"]);
+
+    extra.forEach(t => {
+      data.push([t.name || "Без названия", formatTime(t.time)]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb, ws, "Отчет");
+
+    XLSX.writeFile(wb, filePath);
+
+  } catch (e) {
+    console.error(e);
+    showToast("Ошибка экспорта");
   }
-
-  const main = timers.filter(t => t.type === "main");
-  const extra = timers.filter(t => t.type === "extra");
-
-  const data = [];
-
-  data.push(["Плановые задачи"]);
-  data.push(["Задача", "Время"]);
-
-  main.forEach(t => {
-    data.push([t.name || "Без названия", formatTime(t.time)]);
-  });
-
-  data.push([]);
-  data.push(["Дополнительные задачи"]);
-  data.push(["Задача", "Время"]);
-
-  extra.forEach(t => {
-    data.push([t.name || "Без названия", formatTime(t.time)]);
-  });
-
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(wb, ws, "Отчет");
-  XLSX.writeFile(wb, "report.xlsx");
 };
+exportArchiveBtn.onclick = async () => {
+  try {
+    if (!archive.length) {
+      showToast("Архив пуст");
+      return;
+    }
 
-exportArchiveBtn.onclick = () => {
-  if (!archive.length) {
-    showToast("Архив пуст");
-    return;
+    const filePath = await ipcRenderer.invoke("save-file", "archive.xlsx");
+    if (!filePath) return;
+
+    // 🔥 ПРЕОБРАЗОВАНИЕ В РУССКИЙ
+    const data = archive.map(i => ({
+      "Дата": new Date(i.date).toLocaleDateString("ru-RU"),
+      "Задача": i.name || "Без названия",
+      "Время": formatTime(i.duration),
+      "Тип": i.type === "main" ? "Плановая" : "Дополнительная"
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb, ws, "Архив");
+
+    XLSX.writeFile(wb, filePath);
+
+  } catch (e) {
+    console.error(e);
+    showToast("Ошибка архива");
   }
-
-  const now = new Date();
-  const weekAgo = new Date();
-  weekAgo.setDate(now.getDate() - 7);
-
-  const filtered = archive.filter(i => {
-    const d = new Date(i.date);
-    return d >= weekAgo && d <= now;
-  });
-
-  if (!filtered.length) {
-    showToast("Нет данных за 7 дней");
-    return;
-  }
-
-  const main = filtered.filter(i => i.type === "main");
-  const extra = filtered.filter(i => i.type === "extra");
-
-  const data = [];
-
-  data.push(["Плановые задачи"]);
-  data.push(["Задача", "Время", "Дата"]);
-
-  main.forEach(i => {
-    data.push([i.name, formatTime(i.duration), i.date]);
-  });
-
-  data.push([]);
-
-  data.push(["Дополнительные задачи"]);
-  data.push(["Задача", "Время", "Дата"]);
-
-  extra.forEach(i => {
-    data.push([i.name, formatTime(i.duration), i.date]);
-  });
-
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(wb, ws, "Архив");
-  XLSX.writeFile(wb, "archive.xlsx");
 };
 
 // =====================
