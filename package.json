@@ -5,43 +5,49 @@
   "main": "main.js",
   "author": "Aleksandr Boitsov",
   "license": "ISC",
-
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "release": "electron-builder --win --publish always"
   },
-
   "devDependencies": {
     "electron": "^30.0.0",
     "electron-builder": "^24.13.3",
     "electron-reload": "^2.0.0-alpha.1"
   },
-
   "build": {
-"appId": "com.multitimer.app",
-"productName": "Multi Timer",
-"npmRebuild": false,
-"buildDependenciesFromSource": false,
-    
-
+    "appId": "com.multitimer.app",
+    "productName": "Multi Timer",
+    "npmRebuild": false,
+    "buildDependenciesFromSource": false,
     "directories": {
-  "output": "dist"},
-  "files": [
+      "output": "dist"
+    },
+    "publish": [
+  {
+    "provider": "github",
+    "owner": "memto11",
+    "repo": "multi-timer-app"
+  }
+],
+    "files": [
       "index.html",
       "script.js",
       "style.css",
       "main.js",
       "icon.ico"
-],
-
+    ],
     "win": {
       "target": "nsis",
       "icon": "icon.ico"
     },
-
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
+
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3"
   }
 }

@@ -4,11 +4,12 @@ const addBtn = document.getElementById("addTimer");
 const exportBtn = document.getElementById("export");
 const exportArchiveBtn = document.getElementById("exportArchive");
 const clearArchiveBtn = document.getElementById("clearArchive");
-
+const { ipcRenderer } = require("electron");
 const body = document.body;
 const settingsBtn = document.getElementById("settings");
 const backBtn = document.getElementById("backBtn");
 const clearAllBtn = document.getElementById("clearAll");
+const checkUpdateBtn = document.getElementById("checkUpdates");
 
 let timers = [];
 let archive = [];
@@ -381,6 +382,63 @@ function showToast(msg) {
 
   setTimeout(() => toast.classList.remove("show"), 2000);
 }
+
+// =====================
+// UPDATE UI
+// =====================
+
+ipcRenderer.on("update_available", () => {
+  showUpdateModal("Доступно обновление. Установить?", true);
+});
+
+ipcRenderer.on("update_not_available", () => {
+  showToast("Обновлений нет");
+});
+
+ipcRenderer.on("update_downloaded", () => {
+  showUpdateModal("Обновление скачано. Перезапустить приложение?", false);
+});
+
+ipcRenderer.on("update_error", (_, err) => {
+  showToast("Ошибка обновления: " + err);
+});
+
+function showUpdateModal(text, isDownloadStep) {
+  const modal = document.createElement("div");
+  modal.className = "update-modal";
+
+  modal.innerHTML = `
+    <div class="update-box">
+      <div class="update-text">${text}</div>
+      <div class="update-actions">
+        <button id="updateYes">Да</button>
+        <button id="updateNo">Нет</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById("updateNo").onclick = () => {
+    modal.remove();
+  };
+
+  document.getElementById("updateYes").onclick = () => {
+    modal.remove();
+
+    if (isDownloadStep) {
+      ipcRenderer.send("start_update");
+      showToast("Скачивание...");
+    } else {
+      ipcRenderer.send("install_update");
+    }
+  };
+}
+
+checkUpdateBtn.onclick = () => {
+  ipcRenderer.send("check_updates");
+  showToast("Проверка обновлений...");
+};
 
 // =====================
 // INIT
