@@ -73,14 +73,19 @@ function updateTimes() {
     const el = document.querySelector(`[data-id="${t.id}"] .timer-time`);
     if (!el) return;
 
-    let displayTime = t.time;
-
-    if (t.isRunning && t.lastStartTime) {
-      displayTime += Math.floor((Date.now() - t.lastStartTime) / 1000);
-    }
-
+    const displayTime = getCurrentTime(t);
     el.textContent = formatTime(displayTime);
   });
+}
+
+function getCurrentTime(timer) {
+  let result = timer.time;
+
+  if (timer.isRunning && timer.lastStartTime) {
+    result += Math.floor((Date.now() - timer.lastStartTime) / 1000);
+  }
+
+  return result;
 }
 
 // =====================
@@ -95,13 +100,13 @@ function renderTimers() {
     el.className = "timer";
     el.dataset.id = timer.id;
     el.setAttribute("data-type", timer.type);
-    el.draggable = true;
+    el.draggable = false;
 
     if (timer.isRunning) el.classList.add("active");
 
     el.innerHTML = `
       <input class="timer-name" value="${timer.name}" placeholder="Название"/>
-      <div class="timer-time">${formatTime(timer.time)}</div>
+      <div class="timer-time">${formatTime(getCurrentTime(timer))}</div>
 
       <div class="timer-type">
         <button class="type-btn ${timer.type === "main" ? "active" : ""}" data-type="main">Плановая</button>
@@ -116,6 +121,16 @@ function renderTimers() {
     `;
 
     const input = el.querySelector(".timer-name");
+    // ===== CUSTOM DRAG =====
+el.addEventListener("mousedown", (e) => {
+  // не трогаем input и кнопки
+  if (
+    e.target.closest("input") ||
+    e.target.closest("button")
+  ) return;
+
+  el.classList.add("dragging");
+});
 
     // ===== START / STOP =====
     el.querySelector(".start-btn").onclick = () => {
@@ -202,15 +217,7 @@ function renderTimers() {
     });
 
     // ===== DRAG =====
-    el.addEventListener("dragstart", () => {
-      el.classList.add("dragging");
-    });
 
-    el.addEventListener("dragend", () => {
-      el.classList.remove("dragging");
-      updateTimersOrder();
-      saveTimers();
-    });
 
     timersContainer.appendChild(el);
   });
@@ -222,10 +229,10 @@ function renderTimers() {
 // DRAG LOGIC
 // =====================
 
-timersContainer.addEventListener("dragover", (e) => {
-  e.preventDefault();
-
+timersContainer.addEventListener("mousemove", (e) => {
   const dragging = document.querySelector(".dragging");
+  if (!dragging) return;
+
   const elements = [...timersContainer.querySelectorAll(".timer:not(.dragging)")];
 
   const next = elements.find(el => {
@@ -239,6 +246,17 @@ timersContainer.addEventListener("dragover", (e) => {
     timersContainer.appendChild(dragging);
   }
 });
+
+
+document.addEventListener("mouseup", () => {
+  const dragging = document.querySelector(".dragging");
+  if (!dragging) return;
+
+  dragging.classList.remove("dragging");
+  updateTimersOrder();
+  saveTimers();
+});
+
 
 function updateTimersOrder() {
   const newOrder = [];
