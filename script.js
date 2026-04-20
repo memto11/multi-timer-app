@@ -48,7 +48,7 @@ addBtn.onclick = () => {
     time: 0,
     isRunning: false,
     type: "main",
-    typeLocked: false
+    startedAt: null
   };
 
   timers.push(timer);
@@ -117,37 +117,26 @@ function renderTimers() {
         return;
       }
 
-      // автопауза
+       // разрешаем максимум 2 активных таймера
       if (!timer.isRunning) {
-        timers.forEach(t => {
-          if (t.id !== timer.id && t.isRunning) {
+        const runningTimers = timers.filter(t => t.isRunning && t.id !== timer.id);
 
-            if (t.time > 0) {
-              archive.push({
-                date: new Date().toISOString().slice(0, 10),
-                name: t.name,
-                duration: t.time,
-                type: t.type
-              });
-            }
+        if (runningTimers.length >= 2) {
+          // ставим на паузу последний запущенный активный таймер
+          const lastStartedTimer = runningTimers.reduce((latest, current) => {
+            if (!latest) return current;
+            return (current.startedAt || 0) > (latest.startedAt || 0) ? current : latest;
+          }, null);
 
-            t.isRunning = false;
+          if (lastStartedTimer) {
+            lastStartedTimer.isRunning = false;
+            lastStartedTimer.startedAt = null;
           }
-        });
+        }
 
-        saveArchive();
-        timer.typeLocked = true;
-      }
-
-      // запись при остановке
-      if (timer.isRunning && timer.time > 0) {
-        archive.push({
-          date: new Date().toISOString().slice(0, 10),
-          name: timer.name,
-          duration: timer.time,
-          type: timer.type
-        });
-        saveArchive();
+        timer.startedAt = Date.now();
+      } else {
+        timer.startedAt = null;
       }
 
       timer.isRunning = !timer.isRunning;
@@ -156,8 +145,19 @@ function renderTimers() {
       renderTimers();
     };
 
-    // ===== DELETE =====
+        // ===== DELETE =====
     el.querySelector(".delete-btn").onclick = () => {
+      if (timer.time > 0) {
+        archive.push({
+          date: new Date().toISOString().slice(0, 10),
+          name: timer.name,
+          duration: timer.time,
+          type: timer.type
+        });
+        saveArchive();
+        showToast("Таймер добавлен в архив");
+      }
+
       timers = timers.filter(t => t.id !== timer.id);
       saveTimers();
       renderTimers();
@@ -170,16 +170,16 @@ function renderTimers() {
     };
 
     // ===== TYPE =====
-    const typeButtons = el.querySelectorAll(".type-btn");
+     const typeButtons = el.querySelectorAll(".type-btn");
 
-    if (timer.typeLocked) {
+    if (timer.isRunning) {
       typeButtons.forEach(btn => btn.classList.add("disabled"));
     }
 
     typeButtons.forEach(btn => {
       btn.onclick = () => {
-        if (timer.typeLocked) {
-          showToast("Тип зафиксирован");
+        if (timer.isRunning) {
+          showToast("Нельзя менять тип активного таймера");
           return;
         }
 
