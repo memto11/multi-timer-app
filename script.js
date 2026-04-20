@@ -48,7 +48,8 @@ addBtn.onclick = () => {
     time: 0,
     isRunning: false,
     type: "main",
-    startedAt: null
+    startedAt: null,
+    lastStartTime: null 
   };
 
   timers.push(timer);
@@ -70,7 +71,15 @@ function formatTime(seconds) {
 function updateTimes() {
   timers.forEach(t => {
     const el = document.querySelector(`[data-id="${t.id}"] .timer-time`);
-    if (el) el.textContent = formatTime(t.time);
+    if (!el) return;
+
+    let displayTime = t.time;
+
+    if (t.isRunning && t.lastStartTime) {
+      displayTime += Math.floor((Date.now() - t.lastStartTime) / 1000);
+    }
+
+    el.textContent = formatTime(displayTime);
   });
 }
 
@@ -125,19 +134,22 @@ function renderTimers() {
           // ставим на паузу последний запущенный активный таймер
           const lastStartedTimer = runningTimers.reduce((latest, current) => {
             if (!latest) return current;
-            return (current.startedAt || 0) > (latest.startedAt || 0) ? current : latest;
+            return (current.lastStartTime || 0) > (latest.lastStartTime || 0) ? current : latest;
           }, null);
 
           if (lastStartedTimer) {
             lastStartedTimer.isRunning = false;
-            lastStartedTimer.startedAt = null;
+            lastStartedTimer.lastStartTime = null;
           }
         }
 
-        timer.startedAt = Date.now();
+        timer.lastStartTime = Date.now();
       } else {
-        timer.startedAt = null;
-      }
+  if (timer.lastStartTime) {
+    timer.time += Math.floor((Date.now() - timer.lastStartTime) / 1000);
+  }
+  timer.lastStartTime = null;
+}
 
       timer.isRunning = !timer.isRunning;
 
@@ -245,12 +257,7 @@ function updateTimersOrder() {
 // =====================
 
 setInterval(() => {
-  timers.forEach(t => {
-    if (t.isRunning) t.time++;
-  });
-
-  updateTimes(); // 🔥 фикс дергания
-  saveTimers();
+  updateTimes();
 }, 1000);
 
 // =====================
@@ -441,3 +448,17 @@ checkUpdateBtn.onclick = () => {
 loadTimers();
 loadArchive();
 renderTimers();
+
+// =====================
+// FIX: возврат в окно / разблокировка
+// =====================
+
+window.addEventListener("focus", () => {
+  updateTimes();
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    updateTimes();
+  }
+});
