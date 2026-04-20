@@ -48,7 +48,6 @@ addBtn.onclick = () => {
     time: 0,
     isRunning: false,
     type: "main",
-    startedAt: null,
     lastStartTime: null 
   };
 
@@ -121,17 +120,7 @@ function renderTimers() {
     `;
 
     const input = el.querySelector(".timer-name");
-    // ===== CUSTOM DRAG =====
-el.addEventListener("mousedown", (e) => {
-  // не трогаем input и кнопки
-  if (
-    e.target.closest("input") ||
-    e.target.closest("button")
-  ) return;
-
-  el.classList.add("dragging");
-});
-
+  
     // ===== START / STOP =====
     el.querySelector(".start-btn").onclick = () => {
 
@@ -153,9 +142,10 @@ el.addEventListener("mousedown", (e) => {
           }, null);
 
           if (lastStartedTimer) {
-            lastStartedTimer.isRunning = false;
-            lastStartedTimer.lastStartTime = null;
-          }
+  lastStartedTimer.time = getCurrentTime(lastStartedTimer);
+  lastStartedTimer.isRunning = false;
+  lastStartedTimer.lastStartTime = null;
+}
         }
 
         timer.lastStartTime = Date.now();
@@ -197,7 +187,7 @@ el.addEventListener("mousedown", (e) => {
     };
 
     // ===== TYPE =====
-     const typeButtons = el.querySelectorAll(".type-btn");
+    const typeButtons = el.querySelectorAll(".type-btn");
 
     if (timer.isRunning) {
       typeButtons.forEach(btn => btn.classList.add("disabled"));
@@ -216,67 +206,18 @@ el.addEventListener("mousedown", (e) => {
       };
     });
 
-    // ===== DRAG =====
-
-
     timersContainer.appendChild(el);
   });
 
   emptyState.classList.toggle("show", timers.length === 0);
 }
-
-// =====================
-// DRAG LOGIC
-// =====================
-
-timersContainer.addEventListener("mousemove", (e) => {
-  const dragging = document.querySelector(".dragging");
-  if (!dragging) return;
-
-  const elements = [...timersContainer.querySelectorAll(".timer:not(.dragging)")];
-
-  const next = elements.find(el => {
-    const rect = el.getBoundingClientRect();
-    return e.clientY < rect.top + rect.height / 2;
-  });
-
-  if (next) {
-    timersContainer.insertBefore(dragging, next);
-  } else {
-    timersContainer.appendChild(dragging);
-  }
-});
-
-
-document.addEventListener("mouseup", () => {
-  const dragging = document.querySelector(".dragging");
-  if (!dragging) return;
-
-  dragging.classList.remove("dragging");
-  updateTimersOrder();
-  saveTimers();
-});
-
-
-function updateTimersOrder() {
-  const newOrder = [];
-
-  document.querySelectorAll(".timer").forEach(el => {
-    const id = Number(el.dataset.id);
-    const timer = timers.find(t => t.id === id);
-    if (timer) newOrder.push(timer);
-  });
-
-  timers = newOrder;
-}
-
 // =====================
 // TIMER LOOP
 // =====================
 
 setInterval(() => {
   updateTimes();
-}, 1000);
+}, 100);
 
 // =====================
 // EXPORT
@@ -302,7 +243,7 @@ exportBtn.onclick = async () => {
     data.push(["Задача", "Время"]);
 
     main.forEach(t => {
-      data.push([t.name || "Без названия", formatTime(t.time)]);
+      data.push([t.name || "Без названия", formatTime(getCurrentTime(t))]);
     });
 
     data.push([]);
@@ -310,9 +251,9 @@ exportBtn.onclick = async () => {
     data.push(["Задача", "Время"]);
 
     extra.forEach(t => {
-      data.push([t.name || "Без названия", formatTime(t.time)]);
+      data.push([t.name || "Без названия", formatTime(getCurrentTime(t))]);
     });
-
+    
     const ws = XLSX.utils.aoa_to_sheet(data);
     const wb = XLSX.utils.book_new();
 

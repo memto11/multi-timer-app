@@ -411,22 +411,10 @@ body {
 .toast.show {
   opacity: 1;
 }
-.dragging {
-  opacity: 0.6;
-  transform: scale(1.03);
-  z-index: 10;
-   box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-}
 
-.timer {
-  cursor: grab;
-}
-
-.timer:active {
-  cursor: grabbing;
-}
 .timer {
   transition: transform 0.25s ease, opacity 0.2s;
+  cursor: default;
 }
 .timer:not(.dragging) {
   transition: transform 0.25s ease;
