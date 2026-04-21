@@ -1,15 +1,58 @@
 /* ===== ПЕРЕМЕННЫЕ ===== */
-
+/* Dark (по умолчанию) */
 :root {
   --bg-main: #2f2f2f;
   --bg-card: #3a3a3a;
-  --bg-light: #444;
+  --bg-soft: #444;
 
   --text-main: #ffffff;
   --text-secondary: rgba(255,255,255,0.6);
 
+  --border-soft: rgba(255,255,255,0.12);
+  --shadow-card: inset 0 1px 0 rgba(255,255,255,0.05);
+
+  --overlay: rgba(0,0,0,0.6);
+
   --accent: #e53935;
   --accent-hover: #ff4d4d;
+}
+
+body.light .delete-btn {
+  color: var(--text-secondary);
+}
+
+body.light .timer:hover .delete-btn:not(:hover) {
+  color: var(--text-secondary);
+}
+
+/* Light */
+body.light {
+  --bg-main: #f2f2f7;
+  --bg-card: #ffffff;
+  --bg-soft: #e5e5ea;
+
+  --text-main: #1c1c1e;
+  --text-secondary: #8e8e93;
+
+  --border-soft: rgba(0,0,0,0.15);
+  --shadow-card: 0 8px 20px rgba(0,0,0,0.08);
+
+  --overlay: rgba(0,0,0,0.4);
+
+  --accent: #ff3b30;
+  --accent-hover: #e53935;
+}
+
+
+
+body.light .type-btn {
+background: var(--bg-soft);
+  color: var(--text-secondary);;
+}
+
+body.light .type-btn.active {
+  background: var(--accent);
+  color: white;
 }
 
 /* ===== ГЛОБАЛЬНО ===== */
@@ -26,6 +69,8 @@ html, body {
 
 body {
   background: var(--bg-main);
+  color: var(--text-main);
+  font-weight: 500;
   font-family: Arial, sans-serif;
 }
 
@@ -99,14 +144,15 @@ body {
   padding: 20px;
   border-radius: 20px;
   color: var(--text-main);
-   box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+   box-shadow: var(--shadow-card);
  transition: transform 0.25s ease, box-shadow 0.25s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-
   position: relative;
-  transition: 0.2s;
+}
+body.light .timer {
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
 
 .timer:hover {
@@ -122,7 +168,7 @@ body {
 
 /* 🔥 подсветка доп задач */
 .timer[data-type="extra"] {
-  border: 1px dashed rgba(255,255,255,0.12);
+  border: 1px dashed var(--border-soft);
   opacity: 0.9;
   
 }
@@ -132,7 +178,7 @@ body {
 .timer-name {
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(255,255,255,0.3);
+   border-bottom: 1px solid var(--border-soft);
 
   color: var(--text-main);
   font-size: 18px;
@@ -148,8 +194,17 @@ body {
   text-align: left;
 }
 
+body.light .timer-name {
+  border-bottom: 1px solid rgba(0,0,0,0.2);
+  color: var(--text-main);
+}
+
+body.light .timer-name::placeholder {
+  color: rgba(0,0,0,0.3);
+}
+
 .timer-name::placeholder {
-  color: rgba(255,255,255,0.20);
+  color: var(--text-secondary);
 }
 
 .timer-name:focus {
@@ -162,7 +217,7 @@ body {
  font-size: 35px;
   text-align: center;
   margin: 20px 0;
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: 1px;
 }
 
@@ -248,6 +303,15 @@ body {
   transition: 0.2s;
 }
 
+body.light #backBtn {
+  background: rgba(0,0,0,0.05);
+  color: var(--text-main);
+}
+
+body.light #backBtn:hover {
+  background: rgba(0,0,0,0.1);
+}
+
 #backBtn:hover {
   background: rgba(255,255,255,0.15);
   color: white;
@@ -303,6 +367,10 @@ body {
   cursor: pointer;
 }
 
+body.light #addTimer {
+  box-shadow: 0 8px 20px rgba(255,59,48,0.3);
+}
+
 /* ===== НИЖНЯЯ ПАНЕЛЬ ===== */
 
 .bottom-panel {
@@ -315,12 +383,12 @@ body {
 /* текстовые кнопки */
 
 .settings-text-btn {
-  background: rgba(255,255,255,0.08);
+  background: var(--bg-soft);
   border-radius: 10px;
 
   padding: 6px 12px;
 
-  color: rgba(255,255,255,0.8);
+  color: var(--text-main);
   font-size: 14px;
 
   cursor: pointer;
@@ -328,10 +396,18 @@ body {
 }
 
 .settings-text-btn:hover {
-  background: rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.1);
   color: white;
 }
 
+body.light .settings-text-btn:not(.danger-text-btn) {
+ background: rgba(0,0,0,0.05);
+  color: var(--text-main);
+}
+
+body.light .settings-text-btn:not(.danger-text-btn):hover {
+  background: rgba(0,0,0,0.1);
+}
 /* ===== SETTINGS ===== */
 
 .settings-header {
@@ -340,16 +416,14 @@ body {
   justify-content: space-between;
   padding: 15px 20px;
 }
+
 .settings-header h2 {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   margin: 0;
-}
-
-.settings-header h2 {
-  margin: 0 auto;
-  color: white;
+  color: var(--text-main);
+  font-weight: 600;
 }
 
 
@@ -360,6 +434,8 @@ body {
   padding: 20px;
   width: calc(100% - 40px);
   max-width: 720px;
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
 
   border-radius: 20px;
 
@@ -373,20 +449,42 @@ body {
   border: none;
   border-radius: 14px;
 
-  background: var(--bg-light);
-  color: white;
+  background: var(--bg-soft);
+  color: var(--text-main);
 
   cursor: pointer;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.settings-btn:hover {
+  background: var(--bg-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .settings-btn.danger {
   background: var(--accent);
+  color: white;
+  box-shadow: 0 6px 14px rgba(229,57,53,0.18);
+}
+
+.settings-btn.danger:hover {
+  background: var(--accent-hover);
+  color: white;
+  box-shadow: 0 8px 18px rgba(229,57,53,0.24);
 }
 
 .version {
+  padding-bottom: 15px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   text-align: center;
   font-size: 13px;
-  color: rgba(255,255,255,0.5);
+  color: var(--text-secondary);
 }
 
 /* ===== TOAST ===== */
@@ -397,8 +495,8 @@ body {
   left: 50%;
   transform: translateX(-50%);
 
-  background: rgba(0,0,0,0.8);
-  color: white;
+   background: var(--bg-card);
+  color: var(--text-main);
 
   padding: 10px 20px;
   border-radius: 12px;
@@ -435,7 +533,7 @@ body {
   flex-direction: column;
   text-align: center;
   pointer-events: none;
-  color: rgba(255,255,255,0.7);
+  color: var(--text-secondary);
   padding: 40px;
 }
 
@@ -447,19 +545,19 @@ body {
   font-size: 24px;
   font-weight: 500;
   margin-bottom: 10px;
-  color: rgba(255,255,255,0.9);
+  color: var(--text-main);
 }
 
 .empty-state-text {
   font-size: 14px;
-  color: rgba(255,255,255,0.5);
+  color: var(--text-secondary);
   max-width: 280px;
   line-height: 1.4;
 }
 .update-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: var(--overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -467,7 +565,8 @@ body {
 }
 
 .update-box {
-  background: #3a3a3a;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
   padding: 20px;
   border-radius: 16px;
   width: 280px;
@@ -476,7 +575,7 @@ body {
 
 .update-text {
   margin-bottom: 15px;
-  color: white;
+ color: var(--text-main);
 }
 
 .update-actions {
@@ -489,7 +588,7 @@ body {
   height: 40px;
   border: none;
   border-radius: 10px;
-  background: #e53935;
+  background: var(--accent);
   color: white;
   cursor: pointer;
 }
@@ -505,7 +604,22 @@ body {
 }
 
 .modal-warning {
-  color: rgba(255,255,255,0.7);
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.4;
 }
+
+#themeFade {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-main);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  z-index: 9999;
+}
+
+#themeFade.active {
+  opacity: 1;
+}
+

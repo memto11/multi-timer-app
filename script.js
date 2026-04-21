@@ -9,6 +9,8 @@ const settingsBtn = document.getElementById("settings");
 const backBtn = document.getElementById("backBtn");
 const clearAllBtn = document.getElementById("clearAll");
 const checkUpdateBtn = document.getElementById("checkUpdates");
+const toggleThemeBtn = document.getElementById("toggleTheme");
+
 
 let timers = [];
 let archive = [];
@@ -438,6 +440,43 @@ checkUpdateBtn.onclick = () => {
   showToast("Проверка обновлений...");
 };
 
+function applyTheme(theme) {
+  if (theme === "light") {
+    document.body.classList.add("light");
+  } else {
+    document.body.classList.remove("light");
+  }
+  updateThemeButton();
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem("theme") || "dark";
+  applyTheme(saved);
+}
+
+function toggleTheme() {
+  const fade = document.getElementById("themeFade");
+
+  fade.classList.add("active");
+
+  setTimeout(() => {
+    const isLight = document.body.classList.contains("light");
+    const newTheme = isLight ? "dark" : "light";
+
+    localStorage.setItem("theme", newTheme);
+    applyTheme(newTheme);
+
+    fade.classList.remove("active");
+  }, 150);
+}
+
+function updateThemeButton() {
+  const isLight = document.body.classList.contains("light");
+  toggleThemeBtn.textContent = isLight ? "Темная тема" : "Светлая тема";
+}
+
+toggleThemeBtn.onclick = toggleTheme;
+
 // =====================
 // INIT
 // =====================
@@ -445,6 +484,8 @@ checkUpdateBtn.onclick = () => {
 loadTimers();
 loadArchive();
 renderTimers();
+
+loadTheme();
 
 // =====================
 // FIX: возврат в окно / разблокировка
