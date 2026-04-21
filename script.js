@@ -326,12 +326,48 @@ backBtn.onclick = () => {
 };
 
 clearAllBtn.onclick = () => {
-  if (confirm("Удалить все таймеры?")) {
+  if (!timers.length) {
+    showToast("Нет таймеров для удаления");
+    return;
+  }
+
+  showClearAllModal();
+};
+
+function showClearAllModal() {
+  const modal = document.createElement("div");
+  modal.className = "update-modal";
+
+  modal.innerHTML = `
+    <div class="update-box">
+      <div class="update-text">
+        Удалить все таймеры?
+        <br><br>
+        <span class="modal-warning">
+          Таймеры будут удалены без сохранения в архив.
+        </span>
+      </div>
+      <div class="update-actions">
+        <button id="clearAllYes">Удалить</button>
+        <button id="clearAllNo">Отмена</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById("clearAllNo").onclick = () => {
+    modal.remove();
+  };
+
+  document.getElementById("clearAllYes").onclick = () => {
     timers = [];
     saveTimers();
     renderTimers();
-  }
-};
+    modal.remove();
+    showToast("Все таймеры удалены");
+  };
+}
 
 // =====================
 // TOAST

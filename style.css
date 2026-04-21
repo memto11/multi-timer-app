@@ -307,8 +307,9 @@ body {
 
 .bottom-panel {
   display: flex;
-  justify-content: space-between;
-  padding: 10px 20px;
+  justify-content: space-between; /* или space-evenly */
+  align-items: center;
+  padding: 15px;
 }
 
 /* текстовые кнопки */
@@ -355,8 +356,10 @@ body {
 
 .settings-card {
   background: var(--bg-card);
-  margin: 20px;
+  margin: 20px auto;
   padding: 20px;
+  width: calc(100% - 40px);
+  max-width: 720px;
 
   border-radius: 20px;
 
@@ -489,4 +492,20 @@ body {
   background: #e53935;
   color: white;
   cursor: pointer;
+}
+
+.danger-text-btn {
+  background: var(--accent);
+  color: white;
+}
+
+.danger-text-btn:hover {
+  background: var(--accent-hover);
+  color: white;
+}
+
+.modal-warning {
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+  line-height: 1.4;
 }
