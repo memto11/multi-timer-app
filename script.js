@@ -4,13 +4,11 @@ const addBtn = document.getElementById("addTimer");
 const exportBtn = document.getElementById("export");
 const exportArchiveBtn = document.getElementById("exportArchive");
 const clearArchiveBtn = document.getElementById("clearArchive");
-const { ipcRenderer } = require("electron");
 const body = document.body;
 const settingsBtn = document.getElementById("settings");
 const backBtn = document.getElementById("backBtn");
 const clearAllBtn = document.getElementById("clearAll");
 const checkUpdateBtn = document.getElementById("checkUpdates");
-const XLSX = require("xlsx");
 
 let timers = [];
 let archive = [];
@@ -230,7 +228,7 @@ exportBtn.onclick = async () => {
       return;
     }
 
-    const filePath = await ipcRenderer.invoke("save-file", "report.xlsx");
+    const filePath = await window.electronAPI.saveFile("report.xlsx");
 
     if (!filePath) return; // отмена
 
@@ -259,7 +257,9 @@ exportBtn.onclick = async () => {
 
     XLSX.utils.book_append_sheet(wb, ws, "Отчет");
 
-    XLSX.writeFile(wb, filePath);
+    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+
+    await window.electronAPI.writeFile(filePath, wbout);
 
   } catch (e) {
     console.error(e);
@@ -273,7 +273,7 @@ exportArchiveBtn.onclick = async () => {
       return;
     }
 
-    const filePath = await ipcRenderer.invoke("save-file", "archive.xlsx");
+    const filePath = await window.electronAPI.saveFile("archive.xlsx");
     if (!filePath) return;
 
     // 🔥 ПРЕОБРАЗОВАНИЕ В РУССКИЙ
@@ -289,7 +289,9 @@ exportArchiveBtn.onclick = async () => {
 
     XLSX.utils.book_append_sheet(wb, ws, "Архив");
 
-    XLSX.writeFile(wb, filePath);
+    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+
+await window.electronAPI.writeFile(filePath, wbout);
 
   } catch (e) {
     console.error(e);
@@ -347,19 +349,19 @@ function showToast(msg) {
 // UPDATE UI
 // =====================
 
-ipcRenderer.on("update_available", () => {
+window.electronAPI.onUpdateAvailable(() => {
   showUpdateModal("Доступно обновление. Установить?", true);
 });
 
-ipcRenderer.on("update_not_available", () => {
+window.electronAPI.onUpdateNotAvailable(() => {
   showToast("Обновлений нет");
 });
 
-ipcRenderer.on("update_downloaded", () => {
+window.electronAPI.onUpdateDownloaded(() => {
   showUpdateModal("Обновление скачано. Перезапустить приложение?", false);
 });
 
-ipcRenderer.on("update_error", (_, err) => {
+window.electronAPI.onUpdateError((_, err) => {
   showToast("Ошибка обновления: " + err);
 });
 
@@ -387,16 +389,16 @@ function showUpdateModal(text, isDownloadStep) {
     modal.remove();
 
     if (isDownloadStep) {
-      ipcRenderer.send("start_update");
+      window.electronAPI.startUpdate();
       showToast("Скачивание...");
     } else {
-      ipcRenderer.send("install_update");
+      window.electronAPI.installUpdate();
     }
   };
 }
 
 checkUpdateBtn.onclick = () => {
-  ipcRenderer.send("check_updates");
+  window.electronAPI.checkUpdates();
   showToast("Проверка обновлений...");
 };
 

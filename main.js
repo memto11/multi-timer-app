@@ -27,8 +27,9 @@ function createWindow() {
     icon: path.join(__dirname, "icon.ico"),
 
    webPreferences: {
-  nodeIntegration: true,
-  contextIsolation: false
+  preload: path.join(__dirname, "preload.js"),
+  nodeIntegration: false,
+  contextIsolation: true
 }
   });
 
@@ -94,4 +95,10 @@ ipcMain.handle("save-file", async (_, defaultName) => {
   });
 
  return result.canceled ? null : result.filePath;
+});
+
+const fs = require("fs");
+
+ipcMain.handle("write-file", async (_, filePath, data) => {
+  fs.writeFileSync(filePath, Buffer.from(data));
 });
