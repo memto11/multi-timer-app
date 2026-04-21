@@ -31,12 +31,11 @@
       }
     ],
     "files": [
-      "index.html",
-      "script.js",
-      "style.css",
-      "main.js",
-      "icon.ico"
-    ],
+  "*.js",
+  "*.html",
+  "*.css",
+  "*.ico"
+],
     "win": {
       "target": "nsis",
       "icon": "icon.ico"
