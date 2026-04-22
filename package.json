@@ -1,6 +1,6 @@
 {
   "name": "multi-timer",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Multi timer app",
   "main": "main.js",
   "author": "Aleksandr Boitsov",
@@ -31,11 +31,11 @@
       }
     ],
     "files": [
-  "*.js",
-  "*.html",
-  "*.css",
-  "*.ico"
-],
+      "*.js",
+      "*.html",
+      "*.css",
+      "*.ico"
+    ],
     "win": {
       "target": "nsis",
       "icon": "icon.ico"

@@ -3,11 +3,10 @@ const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const { dialog } = require("electron");
 
-
 // только для разработки
 if (!app.isPackaged) {
   require("electron-reload")(__dirname, {
-    electron: require(`${__dirname}/node_modules/electron`)
+    electron: require(`${__dirname}/node_modules/electron`),
   });
 }
 
@@ -26,19 +25,19 @@ function createWindow() {
 
     icon: path.join(__dirname, "icon.ico"),
 
-   webPreferences: {
-  preload: path.join(__dirname, "preload.js"),
-  nodeIntegration: false,
-  contextIsolation: true
-}
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
   });
 
-   mainWindow.loadFile("index.html");
+  mainWindow.loadFile("index.html");
 }
 
 app.whenReady().then(() => {
   createWindow();
-    // 🔥 автопроверка при запуске
+  // 🔥 автопроверка при запуске
   autoUpdater.checkForUpdates();
 
   // 🔧 логирование (по желанию)
@@ -60,7 +59,7 @@ app.whenReady().then(() => {
   autoUpdater.on("error", (err) => {
     mainWindow.webContents.send("update_error", err.message);
   });
-  
+
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
@@ -89,16 +88,37 @@ ipcMain.on("check_updates", () => {
 ipcMain.handle("save-file", async (_, defaultName) => {
   const result = await dialog.showSaveDialog({
     defaultPath: defaultName,
-    filters: [
-      { name: "Excel", extensions: ["xlsx"] }
-    ]
+    filters: [{ name: "Excel", extensions: ["xlsx"] }],
   });
 
- return result.canceled ? null : result.filePath;
+  return result.canceled ? null : result.filePath;
 });
 
 const fs = require("fs");
 
 ipcMain.handle("write-file", async (_, filePath, data) => {
-  fs.writeFileSync(filePath, Buffer.from(data));
+  try {
+    if (!filePath) throw new Error("Путь не указан");
+
+    // 🔒 проверка расширения
+    const ext = path.extname(filePath).toLowerCase();
+    if (ext !== ".xlsx") {
+      throw new Error("Разрешены только .xlsx файлы");
+    }
+
+    // 🔒 защита от странных путей (например ../../)
+    const normalizedPath = path.normalize(filePath);
+
+    // 🔒 ограничение размера (например до 10мб)
+    if (data.length > 10 * 1024 * 1024) {
+      throw new Error("Файл слишком большой");
+    }
+
+    fs.writeFileSync(normalizedPath, Buffer.from(data));
+
+    return true;
+  } catch (err) {
+    console.error("Ошибка записи файла:", err);
+    throw err;
+  }
 });

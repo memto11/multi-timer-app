@@ -6,23 +6,15 @@
   --bg-soft: #444;
 
   --text-main: #ffffff;
-  --text-secondary: rgba(255,255,255,0.6);
+  --text-secondary: rgba(255, 255, 255, 0.6);
 
-  --border-soft: rgba(255,255,255,0.12);
-  --shadow-card: inset 0 1px 0 rgba(255,255,255,0.05);
+  --border-soft: rgba(255, 255, 255, 0.12);
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
-  --overlay: rgba(0,0,0,0.6);
+  --overlay: rgba(0, 0, 0, 0.6);
 
   --accent: #e53935;
   --accent-hover: #ff4d4d;
-}
-
-body.light .delete-btn {
-  color: var(--text-secondary);
-}
-
-body.light .timer:hover .delete-btn:not(:hover) {
-  color: var(--text-secondary);
 }
 
 /* Light */
@@ -34,20 +26,18 @@ body.light {
   --text-main: #1c1c1e;
   --text-secondary: #8e8e93;
 
-  --border-soft: rgba(0,0,0,0.15);
-  --shadow-card: 0 8px 20px rgba(0,0,0,0.08);
+  --border-soft: rgba(0, 0, 0, 0.15);
+  --shadow-card: 0 8px 20px rgba(0, 0, 0, 0.08);
 
-  --overlay: rgba(0,0,0,0.4);
+  --overlay: rgba(0, 0, 0, 0.4);
 
   --accent: #ff3b30;
   --accent-hover: #e53935;
 }
 
-
-
 body.light .type-btn {
-background: var(--bg-soft);
-  color: var(--text-secondary);;
+  background: var(--bg-soft);
+  color: var(--text-secondary);
 }
 
 body.light .type-btn.active {
@@ -61,7 +51,8 @@ body.light .type-btn.active {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   overflow: hidden;
@@ -86,7 +77,8 @@ body {
 
 /* ===== ЭКРАНЫ ===== */
 
-.app, .screen {
+.app,
+.screen {
   position: absolute;
   inset: 0;
   display: flex;
@@ -110,6 +102,21 @@ body {
   transform: translateX(0);
 }
 
+#statsScreen {
+  transform: translateX(200%);
+}
+
+.show-stats #statsScreen {
+  transform: translateX(0);
+}
+.show-stats #mainScreen {
+  transform: translateX(-200%);
+}
+
+.show-stats #settingsScreen {
+  transform: translateX(-100%);
+}
+
 /* ===== GRID ===== */
 
 .timers-wrapper {
@@ -117,15 +124,29 @@ body {
   overflow-y: auto;
 
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
 
   gap: 24px;
-  padding: 20px;
+  padding-top: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
   padding-bottom: 100px;
 
   align-content: start;
 }
 
+@media (max-width: 1000px) {
+  .timers-wrapper {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .timers-wrapper {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
 /* ===== SCROLLBAR ===== */
 
 .timers-wrapper::-webkit-scrollbar {
@@ -133,7 +154,7 @@ body {
 }
 
 .timers-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 10px;
 }
 
@@ -144,15 +165,17 @@ body {
   padding: 20px;
   border-radius: 20px;
   color: var(--text-main);
-   box-shadow: var(--shadow-card);
- transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: var(--shadow-card);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   position: relative;
 }
 body.light .timer {
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .timer:hover {
@@ -161,16 +184,13 @@ body.light .timer {
 
 .timer.active {
   border: 2px solid var(--accent) !important;
-  box-shadow: 0 0 20px rgba(229,57,53,0.25);
-  
+  box-shadow: 0 0 20px rgba(229, 57, 53, 0.25);
 }
-
 
 /* 🔥 подсветка доп задач */
 .timer[data-type="extra"] {
   border: 1px dashed var(--border-soft);
   opacity: 0.9;
-  
 }
 
 /* ===== INPUT ===== */
@@ -178,7 +198,7 @@ body.light .timer {
 .timer-name {
   background: transparent;
   border: none;
-   border-bottom: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
 
   color: var(--text-main);
   font-size: 18px;
@@ -195,12 +215,12 @@ body.light .timer {
 }
 
 body.light .timer-name {
-  border-bottom: 1px solid rgba(0,0,0,0.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
   color: var(--text-main);
 }
 
 body.light .timer-name::placeholder {
-  color: rgba(0,0,0,0.3);
+  color: rgba(0, 0, 0, 0.3);
 }
 
 .timer-name::placeholder {
@@ -208,13 +228,13 @@ body.light .timer-name::placeholder {
 }
 
 .timer-name:focus {
-    border-bottom: 1px solid rgba(229,57,53,0.7);
+  border-bottom: 1px solid rgba(229, 57, 53, 0.7);
 }
 
 /* ===== ВРЕМЯ ===== */
 
 .timer-time {
- font-size: 35px;
+  font-size: 35px;
   text-align: center;
   margin: 20px 0;
   font-weight: 600;
@@ -231,17 +251,16 @@ body.light .timer-name::placeholder {
 }
 
 .type-btn {
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   border: none;
   border-radius: 12px;
   padding: 6px 14px;
   font-size: 13px;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   transition: 0.2s;
   white-space: nowrap;
 }
-
 
 .type-btn.active {
   background: var(--accent);
@@ -249,7 +268,7 @@ body.light .timer-name::placeholder {
 }
 
 .type-btn:hover {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
 }
 .type-btn.active:hover {
   background: var(--accent-hover);
@@ -264,7 +283,7 @@ body.light .timer-name::placeholder {
 .start-btn {
   width: 140px;
   height: 55px;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
 
   border-radius: 18px;
   border: none;
@@ -294,26 +313,26 @@ body.light .timer-name::placeholder {
 
 #backBtn {
   all: unset;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 6px 12px;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
   cursor: pointer;
   transition: 0.2s;
 }
 
 body.light #backBtn {
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
   color: var(--text-main);
 }
 
 body.light #backBtn:hover {
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 #backBtn:hover {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   color: white;
 }
 /* ===== КРЕСТИК ===== */
@@ -326,13 +345,16 @@ body.light #backBtn:hover {
   background: none;
   border: none;
 
-  color: rgba(255,255,255,0.6);
+  color: var(--text-secondary);
   font-size: 14px;
 
   cursor: pointer;
 
   opacity: 0;
-  transition: 0.2s;
+  transition:
+    opacity 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
 }
 
 .timer:hover .delete-btn {
@@ -360,6 +382,11 @@ body.light #backBtn:hover {
   color: white;
   font-size: 30px;
 
+  transition:
+    background 0.3s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -368,16 +395,43 @@ body.light #backBtn:hover {
 }
 
 body.light #addTimer {
-  box-shadow: 0 8px 20px rgba(255,59,48,0.3);
+  box-shadow: 0 8px 20px rgba(255, 59, 48, 0.3);
 }
 
 /* ===== НИЖНЯЯ ПАНЕЛЬ ===== */
 
 .bottom-panel {
-  display: flex;
-  justify-content: space-between; /* или space-evenly */
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   padding: 15px;
+  position: relative;
+}
+
+#settings {
+  justify-self: start;
+}
+
+#clearAll {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#export {
+  justify-self: end;
+}
+
+@media (max-width: 420px) {
+  #export {
+    font-size: 12px;
+  }
+}
+
+#toMainFromStats {
+  justify-self: center;
+  width: fit-content;
+  padding: 8px 18px;
 }
 
 /* текстовые кнопки */
@@ -396,17 +450,17 @@ body.light #addTimer {
 }
 
 .settings-text-btn:hover {
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
   color: white;
 }
 
 body.light .settings-text-btn:not(.danger-text-btn) {
- background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
   color: var(--text-main);
 }
 
 body.light .settings-text-btn:not(.danger-text-btn):hover {
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
 }
 /* ===== SETTINGS ===== */
 
@@ -426,8 +480,6 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
   font-weight: 600;
 }
 
-
-
 .settings-card {
   background: var(--bg-card);
   margin: 20px auto;
@@ -435,7 +487,7 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
   width: calc(100% - 40px);
   max-width: 720px;
 
-  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
 
   border-radius: 20px;
 
@@ -454,30 +506,33 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
 
   cursor: pointer;
   font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .settings-btn:hover {
   background: var(--bg-light);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .settings-btn.danger {
   background: var(--accent);
   color: white;
-  box-shadow: 0 6px 14px rgba(229,57,53,0.18);
+  box-shadow: 0 6px 14px rgba(229, 57, 53, 0.18);
 }
 
 .settings-btn.danger:hover {
   background: var(--accent-hover);
   color: white;
-  box-shadow: 0 8px 18px rgba(229,57,53,0.24);
+  box-shadow: 0 8px 18px rgba(229, 57, 53, 0.24);
 }
 
 .version {
-  padding-bottom: 15px;
+  padding-bottom: 10px;
   position: fixed;
   bottom: 0;
   left: 0;
@@ -495,7 +550,7 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
   left: 50%;
   transform: translateX(-50%);
 
-   background: var(--bg-card);
+  background: var(--bg-card);
   color: var(--text-main);
 
   padding: 10px 20px;
@@ -514,7 +569,9 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
 }
 
 .timer {
-  transition: transform 0.25s ease, opacity 0.2s;
+  transition:
+    transform 0.25s ease,
+    opacity 0.2s;
   cursor: default;
 }
 .timer:not(.dragging) {
@@ -575,7 +632,7 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
 
 .update-text {
   margin-bottom: 15px;
- color: var(--text-main);
+  color: var(--text-main);
 }
 
 .update-actions {
@@ -623,3 +680,67 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
   opacity: 1;
 }
 
+.stat-block {
+  background: var(--bg-soft);
+  border-radius: 16px;
+  padding: 18px;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.stat-title {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+.settings-text-btn {
+  white-space: nowrap;
+}
+
+.top-bar {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+#todayTime {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.top-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+#activeCount {
+  background: var(--bg-soft);
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+#addTimer.limit {
+  background: var(--bg-soft);
+  color: var(--text-secondary);
+}
+
+#addTimer.limit:hover {
+  transform: none;
+}
+
+#addTimer:not(:disabled):hover {
+  transform: scale(1.08);
+}
+
+#addTimer:not(:disabled):active {
+  transform: scale(0.95);
+}

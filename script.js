@@ -10,7 +10,10 @@ const backBtn = document.getElementById("backBtn");
 const clearAllBtn = document.getElementById("clearAll");
 const checkUpdateBtn = document.getElementById("checkUpdates");
 const toggleThemeBtn = document.getElementById("toggleTheme");
-
+const openStatsBtn = document.getElementById("openStats");
+const statsScreen = document.getElementById("statsScreen");
+const backFromStats = document.getElementById("backFromStats");
+const toMainFromStats = document.getElementById("toMainFromStats");
 
 let timers = [];
 let archive = [];
@@ -20,35 +23,79 @@ let archive = [];
 // =====================
 
 function loadTimers() {
-  const data = localStorage.getItem("timers");
-  if (data) timers = JSON.parse(data);
+  try {
+    const data = localStorage.getItem("timers");
+    if (!data) return;
+
+    const parsed = JSON.parse(data);
+
+    if (Array.isArray(parsed)) {
+      timers = parsed;
+    } else {
+      timers = [];
+    }
+  } catch (e) {
+    console.error("Ошибка чтения timers:", e);
+    timers = [];
+  }
 }
 
 function saveTimers() {
-  localStorage.setItem("timers", JSON.stringify(timers));
+  try {
+    localStorage.setItem("timers", JSON.stringify(timers));
+  } catch (e) {
+    console.error("Ошибка сохранения timers:", e);
+  }
 }
 
 function loadArchive() {
-  const data = localStorage.getItem("archive");
-  if (data) archive = JSON.parse(data);
+  try {
+    const data = localStorage.getItem("archive");
+    if (!data) return;
+
+    const parsed = JSON.parse(data);
+
+    if (Array.isArray(parsed)) {
+      archive = parsed;
+    } else {
+      archive = [];
+    }
+  } catch (e) {
+    console.error("Ошибка чтения archive:", e);
+    archive = [];
+  }
 }
 
 function saveArchive() {
-  localStorage.setItem("archive", JSON.stringify(archive));
+  try {
+    localStorage.setItem("archive", JSON.stringify(archive));
+  } catch (e) {
+    console.error("Ошибка сохранения archive:", e);
+  }
 }
 
 // =====================
 // CREATE TIMER
 // =====================
 
+function updateAddButtonState() {
+  const isLimit = timers.length >= 12;
+  addBtn.classList.toggle("limit", isLimit);
+}
+
 addBtn.onclick = () => {
+  if (timers.length >= 12) {
+    showToast("Максимум 12 таймеров");
+    return;
+  }
+
   const timer = {
     id: Date.now(),
     name: "",
     time: 0,
     isRunning: false,
     type: "main",
-    lastStartTime: null 
+    lastStartTime: null,
   };
 
   timers.push(timer);
@@ -68,7 +115,7 @@ function formatTime(seconds) {
 }
 
 function updateTimes() {
-  timers.forEach(t => {
+  timers.forEach((t) => {
     const el = document.querySelector(`[data-id="${t.id}"] .timer-time`);
     if (!el) return;
 
@@ -92,9 +139,13 @@ function getCurrentTime(timer) {
 // =====================
 
 function renderTimers() {
+  const activeElement = document.activeElement;
+  const activeId = activeElement?.closest(".timer")?.dataset?.id;
+  const cursorPos = activeElement?.selectionStart;
+
   timersContainer.innerHTML = "";
 
-  timers.forEach(timer => {
+  timers.forEach((timer) => {
     const el = document.createElement("div");
     el.className = "timer";
     el.dataset.id = timer.id;
@@ -104,78 +155,95 @@ function renderTimers() {
     if (timer.isRunning) el.classList.add("active");
 
     el.innerHTML = `
-      <input class="timer-name" value="${timer.name}" placeholder="Название"/>
-      <div class="timer-time">${formatTime(getCurrentTime(timer))}</div>
+  <input class="timer-name" placeholder="Название"/>
+  <div class="timer-time">${formatTime(getCurrentTime(timer))}</div>
 
-      <div class="timer-type">
-        <button class="type-btn ${timer.type === "main" ? "active" : ""}" data-type="main">Плановая</button>
-        <button class="type-btn ${timer.type === "extra" ? "active" : ""}" data-type="extra">Дополнительная</button>
-      </div>
+  <div class="timer-type">
+    <button class="type-btn ${timer.type === "main" ? "active" : ""}" data-type="main">Плановая</button>
+    <button class="type-btn ${timer.type === "extra" ? "active" : ""}" data-type="extra">Дополнительная</button>
+  </div>
 
-      <button class="start-btn ${timer.isRunning ? "pause" : ""}">
-        ${timer.isRunning ? "❚❚" : "▶"}
-      </button>
+  <button class="start-btn ${timer.isRunning ? "pause" : ""}">
+    ${timer.isRunning ? "❚❚" : "▶"}
+  </button>
 
-      <button class="delete-btn">✕</button>
-    `;
+  <button class="delete-btn">✕</button>
+`;
 
     const input = el.querySelector(".timer-name");
-  
+    input.value = timer.name || "";
+
     // ===== START / STOP =====
     el.querySelector(".start-btn").onclick = () => {
-
       if (!timer.isRunning && !(timer.name || "").trim()) {
         showToast("Введите название задачи");
         input.focus();
         return;
       }
 
-       // разрешаем максимум 2 активных таймера
+      // разрешаем максимум 2 активных таймера
       if (!timer.isRunning) {
-        const runningTimers = timers.filter(t => t.isRunning && t.id !== timer.id);
+        const runningTimers = timers.filter(
+          (t) => t.isRunning && t.id !== timer.id,
+        );
 
         if (runningTimers.length >= 2) {
           // ставим на паузу последний запущенный активный таймер
           const lastStartedTimer = runningTimers.reduce((latest, current) => {
             if (!latest) return current;
-            return (current.lastStartTime || 0) > (latest.lastStartTime || 0) ? current : latest;
+            return (current.lastStartTime || 0) > (latest.lastStartTime || 0)
+              ? current
+              : latest;
           }, null);
 
           if (lastStartedTimer) {
-  lastStartedTimer.time = getCurrentTime(lastStartedTimer);
-  lastStartedTimer.isRunning = false;
-  lastStartedTimer.lastStartTime = null;
-}
+            lastStartedTimer.time = getCurrentTime(lastStartedTimer);
+            lastStartedTimer.isRunning = false;
+            lastStartedTimer.lastStartTime = null;
+          }
         }
 
         timer.lastStartTime = Date.now();
       } else {
-  if (timer.lastStartTime) {
-    timer.time += Math.floor((Date.now() - timer.lastStartTime) / 1000);
-  }
-  timer.lastStartTime = null;
-}
+        if (timer.lastStartTime) {
+          timer.time += Math.floor((Date.now() - timer.lastStartTime) / 1000);
+        }
+        timer.lastStartTime = null;
+      }
 
       timer.isRunning = !timer.isRunning;
 
       saveTimers();
       renderTimers();
+
+      if (activeId) {
+        const input = document.querySelector(
+          `[data-id="${activeId}"] .timer-name`,
+        );
+
+        if (input) {
+          input.focus();
+          if (cursorPos !== null) {
+            input.setSelectionRange(cursorPos, cursorPos);
+          }
+        }
+      }
     };
 
-        // ===== DELETE =====
+    // ===== DELETE =====
     el.querySelector(".delete-btn").onclick = () => {
       if (timer.time > 0) {
         archive.push({
           date: new Date().toISOString().slice(0, 10),
           name: timer.name,
           duration: timer.time,
-          type: timer.type
+          type: timer.type,
         });
         saveArchive();
         showToast("Таймер добавлен в архив");
       }
 
-      timers = timers.filter(t => t.id !== timer.id);
+      timers = timers.filter((t) => t.id !== timer.id);
       saveTimers();
       renderTimers();
     };
@@ -190,10 +258,10 @@ function renderTimers() {
     const typeButtons = el.querySelectorAll(".type-btn");
 
     if (timer.isRunning) {
-      typeButtons.forEach(btn => btn.classList.add("disabled"));
+      typeButtons.forEach((btn) => btn.classList.add("disabled"));
     }
 
-    typeButtons.forEach(btn => {
+    typeButtons.forEach((btn) => {
       btn.onclick = () => {
         if (timer.isRunning) {
           showToast("Нельзя менять тип активного таймера");
@@ -210,6 +278,7 @@ function renderTimers() {
   });
 
   emptyState.classList.toggle("show", timers.length === 0);
+  updateAddButtonState();
 }
 // =====================
 // TIMER LOOP
@@ -234,15 +303,15 @@ exportBtn.onclick = async () => {
 
     if (!filePath) return; // отмена
 
-    const main = timers.filter(t => t.type === "main");
-    const extra = timers.filter(t => t.type === "extra");
+    const main = timers.filter((t) => t.type === "main");
+    const extra = timers.filter((t) => t.type === "extra");
 
     const data = [];
 
     data.push(["Плановые задачи"]);
     data.push(["Задача", "Время"]);
 
-    main.forEach(t => {
+    main.forEach((t) => {
       data.push([t.name || "Без названия", formatTime(getCurrentTime(t))]);
     });
 
@@ -250,10 +319,10 @@ exportBtn.onclick = async () => {
     data.push(["Дополнительные задачи"]);
     data.push(["Задача", "Время"]);
 
-    extra.forEach(t => {
+    extra.forEach((t) => {
       data.push([t.name || "Без названия", formatTime(getCurrentTime(t))]);
     });
-    
+
     const ws = XLSX.utils.aoa_to_sheet(data);
     const wb = XLSX.utils.book_new();
 
@@ -262,7 +331,6 @@ exportBtn.onclick = async () => {
     const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
 
     await window.electronAPI.writeFile(filePath, wbout);
-
   } catch (e) {
     console.error(e);
     showToast("Ошибка экспорта");
@@ -279,11 +347,11 @@ exportArchiveBtn.onclick = async () => {
     if (!filePath) return;
 
     // 🔥 ПРЕОБРАЗОВАНИЕ В РУССКИЙ
-    const data = archive.map(i => ({
-      "Дата": new Date(i.date).toLocaleDateString("ru-RU"),
-      "Задача": i.name || "Без названия",
-      "Время": formatTime(i.duration),
-      "Тип": i.type === "main" ? "Плановая" : "Дополнительная"
+    const data = archive.map((i) => ({
+      Дата: new Date(i.date).toLocaleDateString("ru-RU"),
+      Задача: i.name || "Без названия",
+      Время: formatTime(i.duration),
+      Тип: i.type === "main" ? "Плановая" : "Дополнительная",
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
@@ -293,8 +361,7 @@ exportArchiveBtn.onclick = async () => {
 
     const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
 
-await window.electronAPI.writeFile(filePath, wbout);
-
+    await window.electronAPI.writeFile(filePath, wbout);
   } catch (e) {
     console.error(e);
     showToast("Ошибка архива");
@@ -306,14 +373,47 @@ await window.electronAPI.writeFile(filePath, wbout);
 // =====================
 
 clearArchiveBtn.onclick = () => {
-  if (!archive.length) return showToast("Архив пуст");
+  if (!archive.length) {
+    showToast("Архив пуст");
+    return;
+  }
 
-  if (!confirm("Очистить архив?")) return;
-
-  archive = [];
-  saveArchive();
-  showToast("Архив очищен");
+  showClearArchiveModal();
 };
+
+function showClearArchiveModal() {
+  const modal = document.createElement("div");
+  modal.className = "update-modal";
+
+  modal.innerHTML = `
+    <div class="update-box">
+      <div class="update-text">
+        Очистить архив?
+        <br><br>
+        <span class="modal-warning">
+          Все записи будут удалены без возможности восстановления
+        </span>
+      </div>
+      <div class="update-actions">
+        <button id="archiveYes">Удалить</button>
+        <button id="archiveNo">Отмена</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById("archiveNo").onclick = () => {
+    modal.remove();
+  };
+
+  document.getElementById("archiveYes").onclick = () => {
+    archive = [];
+    saveArchive();
+    modal.remove();
+    showToast("Архив очищен");
+  };
+}
 
 // =====================
 // SETTINGS
@@ -321,6 +421,20 @@ clearArchiveBtn.onclick = () => {
 
 settingsBtn.onclick = () => {
   body.classList.add("show-settings");
+};
+
+openStatsBtn.onclick = () => {
+  body.classList.add("show-stats");
+  renderStats();
+};
+
+backFromStats.onclick = () => {
+  body.classList.remove("show-stats");
+};
+
+toMainFromStats.onclick = () => {
+  body.classList.remove("show-stats");
+  body.classList.remove("show-settings");
 };
 
 backBtn.onclick = () => {
@@ -335,6 +449,37 @@ clearAllBtn.onclick = () => {
 
   showClearAllModal();
 };
+
+function renderStats() {
+  const container = document.getElementById("statsContent");
+
+  let total = 0;
+  let main = 0;
+  let extra = 0;
+
+  archive.forEach((item) => {
+    total += item.duration;
+    if (item.type === "main") main += item.duration;
+    else extra += item.duration;
+  });
+
+  container.innerHTML = `
+    <div class="stat-block">
+      <div class="stat-title">Всего</div>
+      <div class="stat-value">${formatTime(total)}</div>
+    </div>
+
+    <div class="stat-block">
+      <div class="stat-title">Плановые</div>
+      <div class="stat-value">${formatTime(main)}</div>
+    </div>
+
+    <div class="stat-block">
+      <div class="stat-title">Дополнительные</div>
+      <div class="stat-value">${formatTime(extra)}</div>
+    </div>
+  `;
+}
 
 function showClearAllModal() {
   const modal = document.createElement("div");
@@ -387,19 +532,19 @@ function showToast(msg) {
 // UPDATE UI
 // =====================
 
-window.electronAPI.onUpdateAvailable(() => {
+const offUpdateAvailable = window.electronAPI.onUpdateAvailable(() => {
   showUpdateModal("Доступно обновление. Установить?", true);
 });
 
-window.electronAPI.onUpdateNotAvailable(() => {
+const offUpdateNotAvailable = window.electronAPI.onUpdateNotAvailable(() => {
   showToast("Обновлений нет");
 });
 
-window.electronAPI.onUpdateDownloaded(() => {
+const offUpdateDownloaded = window.electronAPI.onUpdateDownloaded(() => {
   showUpdateModal("Обновление скачано. Перезапустить приложение?", false);
 });
 
-window.electronAPI.onUpdateError((_, err) => {
+const offUpdateError = window.electronAPI.onUpdateError((err) => {
   showToast("Ошибка обновления: " + err);
 });
 
@@ -499,4 +644,37 @@ document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
     updateTimes();
   }
+});
+
+function updateTopBar() {
+  const today = new Date().toISOString().slice(0, 10);
+
+  let total = 0;
+  archive.forEach((i) => {
+    if (i.date === today) total += i.duration;
+  });
+
+  document.getElementById("todayTime").textContent = formatTime(total).slice(
+    0,
+    5,
+  );
+
+  const running = timers.filter((t) => t.isRunning).length;
+  document.getElementById("activeCount").textContent = `Активно: ${running}`;
+
+  document.getElementById("todayDate").textContent =
+    new Date().toLocaleDateString("ru-RU", {
+      weekday: "long",
+      day: "numeric",
+      month: "short",
+    });
+}
+setInterval(updateTopBar, 1000);
+updateAddButtonState();
+
+window.addEventListener("beforeunload", () => {
+  offUpdateAvailable?.();
+  offUpdateNotAvailable?.();
+  offUpdateDownloaded?.();
+  offUpdateError?.();
 });

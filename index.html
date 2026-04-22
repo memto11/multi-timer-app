@@ -1,92 +1,107 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <title>Multi Timer</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Multi Timer</title>
 
-  <link rel="stylesheet" href="style.css" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; 
-  script-src 'self'; style-src 'self' 'unsafe-inline';">
-</head>
+    <link rel="stylesheet" href="style.css" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+    default-src 'self';
+    script-src 'self';
+    style-src 'self' 'unsafe-inline';
+    img-src 'self' data:;
+    font-src 'self';
+    connect-src 'self';
+    object-src 'none';
+    frame-src 'none';
+  "
+    />
+  </head>
 
-<body>
+  <body>
+    <div class="app-wrapper">
+      <!-- ГЛАВНЫЙ ЭКРАН -->
 
-<div class="app-wrapper">
+      <div id="mainScreen" class="app">
+        <div class="top-bar">
+          <div class="top-left">
+            <div id="todayTime">00:00</div>
+            <div class="top-sub" id="todayDate"></div>
+          </div>
+          <div class="top-right" id="activeCount">0</div>
+        </div>
+        <div id="timers" class="timers-wrapper"></div>
 
-  <!-- ===================== -->
-  <!-- ГЛАВНЫЙ ЭКРАН -->
-  <!-- ===================== -->
+        <div id="emptyState" class="empty-state">
+          <div class="empty-state-title">Нажмите «+»</div>
+          <div class="empty-state-text">чтобы добавить таймер</div>
+        </div>
 
-  <div id="mainScreen" class="app">
+        <button id="addTimer">+</button>
 
-    <div id="timers" class="timers-wrapper"></div>
+        <div class="bottom-panel">
+          <div id="settings" class="settings-text-btn">Настройки</div>
+          <div id="clearAll" class="settings-text-btn danger-text-btn">
+            Удалить все
+          </div>
+          <div id="export" class="settings-text-btn">Экспорт в Excel</div>
+        </div>
+      </div>
 
-    <!-- ПУСТОЕ СОСТОЯНИЕ -->
-    <div id="emptyState" class="empty-state">
-  <div class="empty-state-title">Нажмите «+»</div>
-  <div class="empty-state-text">чтобы добавить таймер</div>
-</div>
+      <!-- ЭКРАН НАСТРОЕК -->
+      <div id="settingsScreen" class="screen">
+        <div class="settings-header">
+          <div id="backBtn" class="settings-text-btn">Назад</div>
+          <h2>Настройки</h2>
+        </div>
 
-    <button id="addTimer">+</button>
+        <div class="settings-card">
+          <button id="toggleTheme" class="settings-btn">Светлая тема</button>
+          <button id="openStats" class="settings-btn">Статистика</button>
+          <button id="checkUpdates" class="settings-btn">
+            Проверка обновлений
+          </button>
 
-    <div class="bottom-panel">
-  <div id="settings" class="settings-text-btn">Настройки</div>
-<div id="clearAll" class="settings-text-btn danger-text-btn">
-  Удалить все
-</div>
-  <div id="export" class="settings-text-btn">Экспорт в Excel</div>
+          <button id="exportArchive" class="settings-btn">
+            Выгрузить архив (7 дней)
+          </button>
 
-</div>
+          <button id="clearArchive" class="settings-btn danger">
+            Очистить архив
+          </button>
+        </div>
 
-  </div>
+        <div class="version">
+          Версия 1.6 prod by BAA & NK with ChatGPT's help
+        </div>
+      </div>
 
-  <!-- ===================== -->
-  <!-- ЭКРАН НАСТРОЕК -->
-  <!-- ===================== -->
+      <!-- ЭКРАН СТАТИСТИКИ -->
+      <div id="statsScreen" class="screen">
+        <div class="settings-header">
+          <div id="backFromStats" class="settings-text-btn">Назад</div>
+          <h2>Статистика</h2>
+        </div>
 
+        <div class="settings-card">
+          <div id="statsContent"></div>
+        </div>
 
-  <div id="settingsScreen" class="screen">
-
-    <div class="settings-header">
-      <div id="backBtn" class="settings-text-btn">Назад</div>
-      <h2>Настройки</h2>
+        <div class="bottom-panel">
+          <div></div>
+          <div id="toMainFromStats" class="settings-text-btn danger-text-btn">
+            На главную
+          </div>
+          <div></div>
+        </div>
+      </div>
     </div>
 
-    <div class="settings-card">
-<button id="toggleTheme" class="settings-btn">
-  Светлая тема
-</button>
-       <button id="checkUpdates" class="settings-btn">
-  Проверка обновлений
-</button>
-
-
-      <button id="exportArchive" class="settings-btn">
-        Выгрузить архив (7 дней)
-      </button>
-
-      <button id="clearArchive" class="settings-btn danger">
-        Очистить архив
-      </button>
-
-
-
-    </div>
-
-    <div class="version">
-      Версия 1.5
-      <br> prod by BAA & NK 
-      <br> with ChatGPT's help
-    </div>
-
-  </div>
-
-</div>
-
-<!-- TOAST -->
-<div id="toast" class="toast"></div>
-<script src="xlsx.full.min.js"></script>
-<script src="script.js"></script>
-<div id="themeFade"></div>
-</body>
+    <div id="toast" class="toast"></div>
+    <script src="xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+    <div id="themeFade"></div>
+  </body>
 </html>
