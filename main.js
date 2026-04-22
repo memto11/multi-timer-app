@@ -1,4 +1,20 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, Tray, Menu } = require("electron");
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    if (mainWindow) {
+      if (!mainWindow.isVisible()) mainWindow.show();
+      mainWindow.focus();
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+}
+let tray = null;
+let isQuiting = false;
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const { dialog } = require("electron");
@@ -33,10 +49,48 @@ function createWindow() {
   });
 
   mainWindow.loadFile("index.html");
+  // сворачиваем в трей вместо закрытия
+  mainWindow.on("close", (event) => {
+    if (!isQuiting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+  });
 }
 
 app.whenReady().then(() => {
   createWindow();
+  tray = new Tray(path.join(__dirname, "icon.ico"));
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "Открыть",
+      click: () => {
+        mainWindow.show();
+        mainWindow.focus();
+      },
+    },
+    {
+      label: "Выход",
+      click: () => {
+        isQuiting = true;
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setToolTip("Multi Timer");
+  tray.setContextMenu(contextMenu);
+
+  // клик по иконке — показать/скрыть окно
+  tray.on("click", () => {
+    if (mainWindow.isVisible()) {
+      mainWindow.hide();
+    } else {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
   // 🔥 автопроверка при запуске
   autoUpdater.checkForUpdates();
 
@@ -121,4 +175,9 @@ ipcMain.handle("write-file", async (_, filePath, data) => {
     console.error("Ошибка записи файла:", err);
     throw err;
   }
+});
+
+ipcMain.on("exit_app", () => {
+  isQuiting = true;
+  app.quit();
 });

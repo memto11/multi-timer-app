@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   installUpdate: () => ipcRenderer.send("install_update"),
   checkUpdates: () => ipcRenderer.send("check_updates"),
 
+  exitApp: () => ipcRenderer.send("exit_app"),
+
   onUpdateAvailable: (callback) => {
     const handler = (_, ...args) => callback(...args);
     ipcRenderer.on("update_available", handler);

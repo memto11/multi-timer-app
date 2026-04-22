@@ -14,6 +14,7 @@ const openStatsBtn = document.getElementById("openStats");
 const statsScreen = document.getElementById("statsScreen");
 const backFromStats = document.getElementById("backFromStats");
 const toMainFromStats = document.getElementById("toMainFromStats");
+const exitBtn = document.getElementById("exitApp");
 
 let timers = [];
 let archive = [];
@@ -583,6 +584,9 @@ function showUpdateModal(text, isDownloadStep) {
 checkUpdateBtn.onclick = () => {
   window.electronAPI.checkUpdates();
   showToast("Проверка обновлений...");
+};
+exitBtn.onclick = () => {
+  window.electronAPI.exitApp();
 };
 
 function applyTheme(theme) {
