@@ -15,9 +15,12 @@ const statsScreen = document.getElementById("statsScreen");
 const backFromStats = document.getElementById("backFromStats");
 const toMainFromStats = document.getElementById("toMainFromStats");
 const exitBtn = document.getElementById("exitApp");
+const templateSelect = document.getElementById("templateSelect");
+const addTemplateBtn = document.getElementById("addTemplateBtn");
 
 let timers = [];
 let archive = [];
+let templates = [];
 
 // =====================
 // STORAGE
@@ -75,6 +78,32 @@ function saveArchive() {
   }
 }
 
+function loadTemplates() {
+  try {
+    const data = localStorage.getItem("templates");
+    if (!data) return;
+
+    const parsed = JSON.parse(data);
+
+    if (Array.isArray(parsed)) {
+      templates = parsed;
+    } else {
+      templates = [];
+    }
+  } catch (e) {
+    console.error("Ошибка чтения templates:", e);
+    templates = [];
+  }
+}
+
+function saveTemplates() {
+  try {
+    localStorage.setItem("templates", JSON.stringify(templates));
+  } catch (e) {
+    console.error("Ошибка сохранения templates:", e);
+  }
+}
+
 // =====================
 // CREATE TIMER
 // =====================
@@ -129,7 +158,8 @@ function getCurrentTime(timer) {
   let result = timer.time;
 
   if (timer.isRunning && timer.lastStartTime) {
-    result += Math.floor((Date.now() - timer.lastStartTime) / 1000);
+    const diff = Date.now() - timer.lastStartTime;
+    result += Math.max(0, Math.floor(diff / 1000));
   }
 
   return result;
@@ -138,6 +168,112 @@ function getCurrentTime(timer) {
 // =====================
 // RENDER
 // =====================
+
+function renderTemplates() {
+  templateSelect.innerHTML = `<option value="">Выбрать шаблон</option>`;
+
+  templates.forEach((t, index) => {
+    const option = document.createElement("option");
+    option.value = index;
+    option.textContent = t.name;
+    templateSelect.appendChild(option);
+  });
+}
+
+function showCreateTemplateModal() {
+  const modal = document.createElement("div");
+  modal.className = "update-modal";
+
+  modal.innerHTML = `
+    <div class="update-box">
+      <div class="update-text">Шаблоны</div>
+
+      <div class="template-list" id="templateList"></div>
+
+      <input id="templateInput" placeholder="Новый шаблон" class="template-input"/>
+
+      <div class="update-actions">
+        <button id="templateAdd">Добавить</button>
+        <button id="templateClose">Закрыть</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const list = modal.querySelector("#templateList");
+  const input = modal.querySelector("#templateInput");
+
+  function renderList() {
+    list.innerHTML = "";
+
+    if (!templates.length) {
+      list.innerHTML = `<div class="template-empty">Нет шаблонов</div>`;
+      return;
+    }
+
+    templates.forEach((t, index) => {
+      const item = document.createElement("div");
+      item.className = "template-item";
+
+      item.innerHTML = `
+        <span>${t.name}</span>
+        <button class="template-delete">✕</button>
+      `;
+
+      item.querySelector(".template-delete").onclick = () => {
+        templates.splice(index, 1);
+        saveTemplates();
+        renderTemplates();
+        renderList();
+        showToast("Шаблон удален");
+      };
+
+      list.appendChild(item);
+    });
+  }
+
+  renderList();
+
+  // Добавление
+  modal.querySelector("#templateAdd").onclick = () => {
+    const value = input.value.trim();
+    const normalized = value.toLowerCase();
+
+const exists = templates.some(
+  (t) => t.name.trim().toLowerCase() === normalized
+);
+
+if (exists) {
+  showToast("Такой шаблон уже есть");
+  return;
+}
+
+    if (!value) {
+      showToast("Введите название");
+      return;
+    }
+
+    if (templates.length >= 7) {
+      showToast("Максимум 7 шаблонов");
+      return;
+    }
+
+    templates.push({ name: value });
+
+    saveTemplates();
+    renderTemplates();
+    renderList();
+
+    input.value = "";
+    showToast("Шаблон добавлен");
+  };
+
+  // Закрыть
+  modal.querySelector("#templateClose").onclick = () => {
+    modal.remove();
+  };
+}
 
 function renderTimers() {
   const activeElement = document.activeElement;
@@ -233,21 +369,24 @@ function renderTimers() {
 
     // ===== DELETE =====
     el.querySelector(".delete-btn").onclick = () => {
-      if (timer.time > 0) {
-        archive.push({
-          date: new Date().toISOString().slice(0, 10),
-          name: timer.name,
-          duration: timer.time,
-          type: timer.type,
-        });
-        saveArchive();
-        showToast("Таймер добавлен в архив");
-      }
+  const actualTime = getCurrentTime(timer);
 
-      timers = timers.filter((t) => t.id !== timer.id);
-      saveTimers();
-      renderTimers();
-    };
+  if (actualTime > 0) {
+    archive.push({
+      date: new Date().toLocaleDateString("en-CA"),
+      name: timer.name,
+      duration: actualTime,
+      type: timer.type,
+    });
+
+    saveArchive();
+    showToast("Таймер добавлен в архив");
+  }
+
+  timers = timers.filter((t) => t.id !== timer.id);
+  saveTimers();
+  renderTimers();
+};
 
     // ===== INPUT =====
     input.oninput = (e) => {
@@ -424,9 +563,69 @@ settingsBtn.onclick = () => {
   body.classList.add("show-settings");
 };
 
+addTemplateBtn.onclick = () => {
+  showCreateTemplateModal();
+};
+
 openStatsBtn.onclick = () => {
   body.classList.add("show-stats");
   renderStats();
+};
+
+templateSelect.onchange = () => {
+  const index = templateSelect.value;
+
+  if (index === "") return;
+
+  if (timers.length >= 12) {
+  showToast("Максимум 12 таймеров");
+  templateSelect.value = "";
+  return;
+}
+
+const template = templates[index];
+if (!template) return;
+
+  // создаём таймер
+ const runningTimers = timers.filter((t) => t.isRunning);
+
+if (runningTimers.length >= 2) {
+  const lastStarted = runningTimers.reduce((latest, current) => {
+    if (!latest) return current;
+    return (current.lastStartTime || 0) > (latest.lastStartTime || 0)
+      ? current
+      : latest;
+  }, null);
+
+  if (lastStarted) {
+    lastStarted.time = getCurrentTime(lastStarted);
+    lastStarted.isRunning = false;
+    lastStarted.lastStartTime = null;
+  }
+}
+
+// создаём и сразу запускаем
+const now = Date.now();
+
+const timer = {
+  id: now,
+  name: template.name,
+  time: 0,
+  isRunning: true,
+  type: "main",
+  lastStartTime: now,
+};
+
+timers.push(timer);
+
+saveTimers();
+renderTimers();
+updateTimes();
+
+  // сброс выбора
+  templateSelect.value = "";
+
+  showToast("Таймер запущен из шаблона");
 };
 
 backFromStats.onclick = () => {
@@ -633,7 +832,8 @@ toggleThemeBtn.onclick = toggleTheme;
 loadTimers();
 loadArchive();
 renderTimers();
-
+loadTemplates();
+renderTemplates();
 loadTheme();
 
 // =====================

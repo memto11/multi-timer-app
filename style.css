@@ -117,6 +117,69 @@ body {
   transform: translateX(-100%);
 }
 
+.templates-bar {
+  display: flex;
+  justify-content: center;
+  padding: 14px 20px 6px;
+}
+
+.templates-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  max-width: 520px;
+}
+
+.template-select {
+  flex: 1;
+  height: 42px;
+
+  background: var(--bg-card);
+  color: var(--text-main);
+
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+
+  padding: 0 14px;
+  font-size: 14px;
+  outline: none;
+}
+
+.template-btn {
+  height: 42px;
+  padding: 0 14px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: var(--bg-soft);
+  color: var(--text-main);
+
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.template-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.template-btn:active {
+  transform: scale(0.97);
+}
+
+body.light .template-btn {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.light .template-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
 /* ===== GRID ===== */
 
 .timers-wrapper {
@@ -128,7 +191,7 @@ body {
   gap: 15px;
 
   gap: 24px;
-  padding-top: 10px;
+  padding-top: 14px;
   padding-left: 20px;
   padding-right: 20px;
   padding-bottom: 100px;
@@ -735,4 +798,87 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
 
 #addTimer:not(:disabled):active {
   transform: scale(0.95);
+}
+
+.template-input {
+  width: 100%;
+  margin-top: 12px;
+  margin-bottom: 12px;
+
+  height: 40px;
+  padding: 0 12px;
+
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+
+  background: var(--bg-card);
+  color: var(--text-main);
+}
+
+.template-list {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.template-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 8px 10px;
+  border-radius: 8px;
+
+  background: var(--bg-soft);
+  margin-bottom: 6px;
+}
+
+.template-item span {
+  font-size: 14px;
+}
+
+.template-delete {
+  background: transparent;
+  border: none;
+  color: #ff4d4d;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.template-delete:hover {
+  opacity: 0.7;
+}
+
+.template-empty {
+  text-align: center;
+  opacity: 0.6;
+  font-size: 13px;
+}
+
+/* ===== кастомный скролл ===== */
+
+.template-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.template-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.template-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+
+.template-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+body.light .template-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+body.light .template-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
 }
