@@ -649,36 +649,3 @@ document.addEventListener("visibilitychange", () => {
     updateTimes();
   }
 });
-
-function updateTopBar() {
-  const today = new Date().toISOString().slice(0, 10);
-
-  let total = 0;
-  archive.forEach((i) => {
-    if (i.date === today) total += i.duration;
-  });
-
-  document.getElementById("todayTime").textContent = formatTime(total).slice(
-    0,
-    5,
-  );
-
-  const running = timers.filter((t) => t.isRunning).length;
-  document.getElementById("activeCount").textContent = `Активно: ${running}`;
-
-  document.getElementById("todayDate").textContent =
-    new Date().toLocaleDateString("ru-RU", {
-      weekday: "long",
-      day: "numeric",
-      month: "short",
-    });
-}
-setInterval(updateTopBar, 1000);
-updateAddButtonState();
-
-window.addEventListener("beforeunload", () => {
-  offUpdateAvailable?.();
-  offUpdateNotAvailable?.();
-  offUpdateDownloaded?.();
-  offUpdateError?.();
-});
