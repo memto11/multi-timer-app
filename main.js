@@ -5,11 +5,11 @@ if (!gotTheLock) {
   app.quit();
 } else {
   app.on("second-instance", () => {
-   if (mainWindow) {
-  if (mainWindow.isMinimized()) mainWindow.restore();
-  if (!mainWindow.isVisible()) mainWindow.show();
-  mainWindow.focus();
-}
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      if (!mainWindow.isVisible()) mainWindow.show();
+      mainWindow.focus();
+    }
   });
 }
 let tray = null;
@@ -30,13 +30,15 @@ let mainWindow;
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 400,
-    height: 700,
+    height: 600,
 
     minWidth: 400,
-    minHeight: 500,
+    minHeight: 600,
 
     resizable: true,
     autoHideMenuBar: true,
+    frame: false,
+    titleBarStyle: "hidden",
 
     icon: path.join(__dirname, "icon.ico"),
 
@@ -48,6 +50,16 @@ function createWindow() {
   });
 
   mainWindow.loadFile("index.html");
+
+  mainWindow.setMenuBarVisibility(false);
+  mainWindow.setMenu(null);
+
+  // ЕСЛИ НУЖНО ОТКРЫТЬ КОНСОЛЬ РАЗРАБОТЧИКА //
+
+  //if (!app.isPackaged) {
+  //mainWindow.webContents.openDevTools();
+  //}
+
   // сворачиваем в трей вместо закрытия
   mainWindow.on("close", (event) => {
     if (!isQuiting) {
@@ -179,4 +191,20 @@ ipcMain.handle("write-file", async (_, filePath, data) => {
 ipcMain.on("exit_app", () => {
   isQuiting = true;
   app.quit();
+});
+
+ipcMain.on("window-min", () => {
+  mainWindow.minimize();
+});
+
+ipcMain.on("window-max", () => {
+  if (mainWindow.isMaximized()) {
+    mainWindow.unmaximize();
+  } else {
+    mainWindow.maximize();
+  }
+});
+
+ipcMain.on("window-close", () => {
+  mainWindow.hide(); // 🔥 в трей
 });

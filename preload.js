@@ -12,6 +12,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   exitApp: () => ipcRenderer.send("exit_app"),
 
+  // 🔥 управление окном
+  minimize: () => ipcRenderer.send("window-min"),
+  maximize: () => ipcRenderer.send("window-max"),
+  close: () => ipcRenderer.send("window-close"),
+
+  // события
   onUpdateAvailable: (callback) => {
     const handler = (_, ...args) => callback(...args);
     ipcRenderer.on("update_available", handler);

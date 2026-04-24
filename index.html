@@ -21,22 +21,32 @@
   </head>
 
   <body>
+    <div class="titlebar">
+      <div class="titlebar-drag">Multi Timer</div>
+
+      <div class="window-controls">
+        <button id="minBtn">—</button>
+        <button id="maxBtn">▢</button>
+        <button id="closeBtn">✕</button>
+      </div>
+    </div>
     <div class="app-wrapper">
       <!-- ГЛАВНЫЙ ЭКРАН -->
 
       <div id="mainScreen" class="app">
         <div class="templates-bar">
-  <div class="templates-box">
-    
-    <select id="templateSelect" class="template-select">
-      <option value="">Выбрать шаблон</option>
-    </select>
+          <div class="templates-box">
+            <div class="template-dropdown" id="templateDropdown">
+              <div class="template-current" id="templateCurrent">
+                Выбрать шаблон
+              </div>
 
-    <button id="addTemplateBtn" class="template-btn">
-      Шаблоны
-    </button>
-  </div>
-</div>
+              <div class="template-menu" id="templateMenu"></div>
+            </div>
+
+            <button id="addTemplateBtn" class="template-btn">Шаблоны</button>
+          </div>
+        </div>
         <div id="timers" class="timers-wrapper"></div>
 
         <div id="emptyState" class="empty-state">

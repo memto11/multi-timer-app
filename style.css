@@ -63,13 +63,16 @@ body {
   color: var(--text-main);
   font-weight: 500;
   font-family: Arial, sans-serif;
+
+  display: flex;
+  flex-direction: column;
 }
 
 /* ===== ОБЕРТКА ===== */
 
 .app-wrapper {
+  flex: 1;
   width: 100%;
-  height: 100%;
   position: relative;
   background: var(--bg-main);
   overflow: hidden;
@@ -121,6 +124,17 @@ body {
   display: flex;
   justify-content: center;
   padding: 14px 20px 6px;
+
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: templatesDrop 0.3s ease forwards;
+}
+
+@keyframes templatesDrop {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .templates-box {
@@ -161,7 +175,9 @@ body {
   font-size: 14px;
   font-weight: 500;
 
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .template-btn:hover {
@@ -262,7 +278,7 @@ body.light .timer {
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--border-soft);
-
+  user-select: text;
   color: var(--text-main);
   font-size: 18px;
 
@@ -595,11 +611,9 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
 }
 
 .version {
-  padding-bottom: 10px;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
+  margin-top: auto;
+  padding: 12px 0;
+
   text-align: center;
   font-size: 13px;
   color: var(--text-secondary);
@@ -674,6 +688,7 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
   max-width: 280px;
   line-height: 1.4;
 }
+
 .update-modal {
   position: fixed;
   inset: 0;
@@ -682,6 +697,8 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
   align-items: center;
   justify-content: center;
   z-index: 999;
+
+  animation: modalOverlayFade 0.18s ease forwards;
 }
 
 .update-box {
@@ -691,6 +708,29 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
   border-radius: 16px;
   width: 280px;
   text-align: center;
+
+  animation: modalBoxIn 0.22s ease forwards;
+  transform-origin: center;
+}
+
+@keyframes modalOverlayFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalBoxIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .update-text {
@@ -827,15 +867,34 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
   justify-content: space-between;
   align-items: center;
 
-  padding: 8px 10px;
-  border-radius: 8px;
+  height: 40px; /* фиксируем размер */
+  padding: 0 12px;
 
+  border-radius: 10px;
   background: var(--bg-soft);
+
   margin-bottom: 6px;
+
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
 }
 
 .template-item span {
   font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 80%;
+}
+
+.template-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(2px);
+}
+
+body.light .template-item:hover {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .template-delete {
@@ -881,4 +940,191 @@ body.light .template-list::-webkit-scrollbar-thumb {
 
 body.light .template-list::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.35);
+}
+
+/* ===== ЗАКРЫТИЕ МОДАЛКИ ===== */
+
+.update-modal.closing {
+  animation: modalOverlayOut 0.15s ease forwards;
+}
+
+.update-modal.closing .update-box {
+  animation: modalBoxOut 0.18s ease forwards;
+}
+
+@keyframes modalOverlayOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modalBoxOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+}
+
+.template-item {
+  opacity: 0;
+  transform: translateY(6px);
+  animation: templateItemIn 0.2s ease forwards;
+}
+
+@keyframes templateItemIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.template-dropdown {
+  position: relative;
+  flex: 1;
+}
+
+.template-current {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+
+  background: var(--bg-card);
+  color: var(--text-main);
+
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.template-current:hover {
+  background: var(--bg-soft);
+}
+
+/* стрелка */
+.template-current::after {
+  content: "▾";
+  margin-left: auto;
+  opacity: 0.6;
+}
+
+/* меню */
+
+.template-menu {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+
+  overflow: hidden;
+
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  pointer-events: none;
+
+  transition: 0.18s ease;
+  z-index: 20;
+}
+
+/* открыто */
+.template-dropdown.open .template-menu {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* элементы */
+
+.template-option {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+
+  transition: background 0.15s;
+}
+
+.template-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.light .template-option:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* ===== TITLEBAR ===== */
+
+.titlebar {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-soft);
+
+  padding: 0 8px;
+}
+
+.titlebar-drag {
+  -webkit-app-region: drag;
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.window-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.window-controls button {
+  width: 32px;
+  height: 28px;
+
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+
+  cursor: pointer;
+  border-radius: 6px;
+
+  transition: 0.2s;
+}
+
+.window-controls button:hover {
+  background: var(--bg-soft);
+}
+
+#closeBtn:hover {
+  background: #e53935;
+  color: white;
+}
+
+.titlebar,
+.window-controls,
+.window-controls button,
+.template-current,
+.template-option,
+.template-btn,
+.settings-text-btn,
+.settings-btn,
+.start-btn,
+.type-btn,
+#addTimer {
+  user-select: none;
+  -webkit-user-select: none;
 }
