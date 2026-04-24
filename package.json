@@ -1,6 +1,6 @@
 {
   "name": "multi-timer",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Multi timer app",
   "main": "main.js",
   "author": "Aleksandr Boitsov",

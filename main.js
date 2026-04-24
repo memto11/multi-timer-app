@@ -5,11 +5,17 @@ if (!gotTheLock) {
   app.quit();
 } else {
   app.on("second-instance", () => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      if (!mainWindow.isVisible()) mainWindow.show();
-      mainWindow.focus();
+    if (!mainWindow) return;
+
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
     }
+
+    if (!mainWindow.isVisible()) {
+      mainWindow.show();
+    }
+
+    mainWindow.focus();
   });
 }
 let tray = null;
@@ -35,6 +41,9 @@ function createWindow() {
     minWidth: 400,
     minHeight: 600,
 
+    show: false,
+    backgroundColor: "#2f2f2f",
+
     resizable: true,
     autoHideMenuBar: true,
     frame: false,
@@ -50,6 +59,9 @@ function createWindow() {
   });
 
   mainWindow.loadFile("index.html");
+  mainWindow.once("ready-to-show", () => {
+    mainWindow.show();
+  });
 
   mainWindow.setMenuBarVisibility(false);
   mainWindow.setMenu(null);
@@ -102,8 +114,6 @@ app.whenReady().then(() => {
       mainWindow.focus();
     }
   });
-  // 🔥 автопроверка при запуске
-  autoUpdater.checkForUpdates();
 
   // 🔧 логирование (по желанию)
   autoUpdater.autoDownload = false; // сначала спрашиваем пользователя

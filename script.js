@@ -24,6 +24,7 @@ const templateMenu = document.getElementById("templateMenu");
 let timers = [];
 let archive = [];
 let templates = [];
+let lastRenderedIds = new Set();
 
 // =====================
 // STORAGE
@@ -308,6 +309,8 @@ function showCreateTemplateModal() {
 }
 
 function renderTimers() {
+  const currentIds = new Set(timers.map((t) => t.id));
+
   const activeElement = document.activeElement;
   const activeId = activeElement?.closest(".timer")?.dataset?.id;
   const cursorPos = activeElement?.selectionStart;
@@ -316,7 +319,22 @@ function renderTimers() {
 
   timers.forEach((timer) => {
     const el = document.createElement("div");
+    const isNew = !lastRenderedIds.has(timer.id);
     el.className = "timer";
+
+    if (isNew) {
+      el.classList.add("timer-new");
+
+      // 🔥 снимаем класс после анимации появления
+      el.addEventListener(
+        "animationend",
+        () => {
+          el.classList.remove("timer-new");
+        },
+        { once: true },
+      );
+    }
+
     el.dataset.id = timer.id;
     el.setAttribute("data-type", timer.type);
     el.draggable = false;
@@ -338,9 +356,12 @@ function renderTimers() {
 
   <button class="delete-btn">✕</button>
 `;
-
     const input = el.querySelector(".timer-name");
     input.value = timer.name || "";
+
+    if (timer.isRunning) {
+      input.disabled = true;
+    }
 
     // ===== START / STOP =====
     el.querySelector(".start-btn").onclick = () => {
@@ -399,7 +420,6 @@ function renderTimers() {
       }
     };
 
-    // ===== DELETE =====
     el.querySelector(".delete-btn").onclick = () => {
       const actualTime = getCurrentTime(timer);
 
@@ -415,13 +435,35 @@ function renderTimers() {
         showToast("Таймер добавлен в архив");
       }
 
-      timers = timers.filter((t) => t.id !== timer.id);
-      saveTimers();
-      renderTimers();
+      // 🔥 анимация
+      el.classList.add("deleting");
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.addEventListener(
+            "animationend",
+            () => {
+              el.remove();
+
+              timers = timers.filter((t) => t.id !== timer.id);
+              saveTimers();
+
+              if (timers.length === 0) {
+                emptyState.classList.add("show");
+              }
+
+              updateAddButtonState();
+            },
+            { once: true },
+          );
+        });
+      });
     };
 
     // ===== INPUT =====
     input.oninput = (e) => {
+      if (timer.isRunning) return;
+
       timer.name = e.target.value;
       saveTimers();
     };
@@ -451,6 +493,8 @@ function renderTimers() {
 
   emptyState.classList.toggle("show", timers.length === 0);
   updateAddButtonState();
+
+  lastRenderedIds = currentIds;
 }
 // =====================
 // TIMER LOOP

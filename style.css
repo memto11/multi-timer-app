@@ -121,6 +121,8 @@ body {
 }
 
 .templates-bar {
+  position: relative;
+  z-index: 1000;
   display: flex;
   justify-content: center;
   padding: 14px 20px 6px;
@@ -240,36 +242,54 @@ body.light .template-btn:hover {
 /* ===== КАРТОЧКА ===== */
 
 .timer {
+  border: 2px solid transparent;
   background: var(--bg-card);
   padding: 20px;
   border-radius: 20px;
   color: var(--text-main);
   box-shadow: var(--shadow-card);
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
+
+  user-select: none;
+  -webkit-user-select: none;
+
+  transition: opacity 0.2s ease;
+
+  will-change: transform, opacity;
+
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   position: relative;
 }
+
 body.light .timer {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .timer:hover {
   transform: translateY(-3px);
+  transition: transform 0.2s ease;
 }
 
 .timer.active {
-  border: 2px solid var(--accent) !important;
+  border-color: var(--accent);
   box-shadow: 0 0 20px rgba(229, 57, 53, 0.25);
 }
 
 /* 🔥 подсветка доп задач */
 .timer[data-type="extra"] {
-  border: 1px dashed var(--border-soft);
-  opacity: 0.9;
+  border: 2px dashed var(--border-soft);
+  opacity: 0.95;
+}
+
+.timer-name:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.timer[data-type="extra"].active {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(229, 57, 53, 0.25);
 }
 
 /* ===== INPUT ===== */
@@ -291,6 +311,10 @@ body.light .timer {
 
   transition: border 0.2s;
   text-align: left;
+}
+
+.timer button {
+  user-select: none;
 }
 
 body.light .timer-name {
@@ -557,6 +581,16 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
   margin: 0;
   color: var(--text-main);
   font-weight: 600;
+
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+h1,
+h2,
+h3 {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .settings-card {
@@ -645,15 +679,6 @@ body.light .settings-text-btn:not(.danger-text-btn):hover {
   opacity: 1;
 }
 
-.timer {
-  transition:
-    transform 0.25s ease,
-    opacity 0.2s;
-  cursor: default;
-}
-.timer:not(.dragging) {
-  transition: transform 0.25s ease;
-}
 .type-btn.disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -1036,7 +1061,7 @@ body.light .template-list::-webkit-scrollbar-thumb:hover {
   pointer-events: none;
 
   transition: 0.18s ease;
-  z-index: 20;
+  z-index: 9999;
 }
 
 /* открыто */
@@ -1127,4 +1152,39 @@ body.light .template-option:hover {
 #addTimer {
   user-select: none;
   -webkit-user-select: none;
+}
+
+/* ===== АНИМАЦИЯ НОВОГО ТАЙМЕРА ===== */
+
+.timer-new {
+  animation: timerIn 0.22s ease forwards;
+}
+
+.timer-new:hover {
+  animation: none;
+  transform: translateY(-3px);
+}
+
+@keyframes timerIn {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+/* ===== АНИМАЦИЯ УДАЛЕНИЯ ТАЙМЕРА ===== */
+
+.timer.deleting {
+  animation: timerDeleteOut 0.14s ease forwards !important;
+}
+
+@keyframes timerDeleteOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
 }
