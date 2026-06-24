@@ -25,6 +25,7 @@ let timers = [];
 let archive = [];
 let templates = [];
 let lastRenderedIds = new Set();
+const TIMER_REMINDER_INTERVAL = 30 * 60 * 1000; // 30 минут
 
 // =====================
 // STORAGE
@@ -143,6 +144,35 @@ function closeModal(modal) {
   setTimeout(() => {
     modal.remove();
   }, 180);
+}
+
+// =====================
+// NOTIFICATIONS
+// =====================
+
+function showTimerNotification(timer) {
+  if (!("Notification" in window)) return;
+
+  new Notification("Multi Timer", {
+    body: `Таймер всё ещё работает: ${timer.name || "Без названия"}`,
+  });
+}
+
+function checkTimerReminders() {
+  const now = Date.now();
+
+  timers.forEach((timer) => {
+    if (!timer.isRunning || !timer.lastStartTime) return;
+
+    const lastReminder = timer.lastReminderTime || timer.lastStartTime;
+
+    if (now - lastReminder >= TIMER_REMINDER_INTERVAL) {
+      showTimerNotification(timer);
+
+      timer.lastReminderTime = now;
+      saveTimers();
+    }
+  });
 }
 
 // =====================
@@ -394,11 +424,14 @@ function renderTimers() {
         }
 
         timer.lastStartTime = Date.now();
+        timer.lastReminderTime = null;
       } else {
         if (timer.lastStartTime) {
           timer.time += Math.floor((Date.now() - timer.lastStartTime) / 1000);
         }
+
         timer.lastStartTime = null;
+        timer.lastReminderTime = null;
       }
 
       timer.isRunning = !timer.isRunning;
@@ -502,6 +535,7 @@ function renderTimers() {
 
 setInterval(() => {
   updateTimes();
+  checkTimerReminders();
 }, 100);
 
 // =====================
