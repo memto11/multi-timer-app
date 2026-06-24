@@ -26,6 +26,7 @@ let archive = [];
 let templates = [];
 let lastRenderedIds = new Set();
 const TIMER_REMINDER_INTERVAL = 30 * 60 * 1000; // 30 минут
+const TIMER_ROLLBACK_SECONDS = 10 * 60; // 10 минут
 
 // =====================
 // STORAGE
@@ -380,11 +381,15 @@ function renderTimers() {
     <button class="type-btn ${timer.type === "extra" ? "active" : ""}" data-type="extra">Дополнительная</button>
   </div>
 
+<div class="timer-actions">
+  <button class="rollback-btn">−10 мин</button>
+
   <button class="start-btn ${timer.isRunning ? "pause" : ""}">
     ${timer.isRunning ? "❚❚" : "▶"}
   </button>
+</div>
 
-  <button class="delete-btn">✕</button>
+<button class="delete-btn">✕</button>
 `;
     const input = el.querySelector(".timer-name");
     input.value = timer.name || "";
@@ -452,6 +457,21 @@ function renderTimers() {
         }
       }
     };
+
+// ===== ROLLBACK TIME =====
+    el.querySelector(".rollback-btn").onclick = () => {
+      const actualTime = getCurrentTime(timer);
+
+      timer.time = Math.max(0, actualTime - TIMER_ROLLBACK_SECONDS);
+
+      if (timer.isRunning) {
+        timer.lastStartTime = Date.now();
+      }
+
+      saveTimers();
+      renderTimers();
+    };
+
 
     el.querySelector(".delete-btn").onclick = () => {
       const actualTime = getCurrentTime(timer);

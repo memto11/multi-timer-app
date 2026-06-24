@@ -303,14 +303,14 @@ body.light .timer {
   font-size: 18px;
 
   outline: none;
-  width: 70%;
+  width: 100%;
   margin: 0 auto;
   display: block;
 
   padding: 4px 0;
 
   transition: border 0.2s;
-  text-align: left;
+  text-align: center;
 }
 
 .timer button {
@@ -381,6 +381,41 @@ body.light .timer-name::placeholder {
 .type-btn:active {
   transform: scale(0.97);
 }
+
+.timer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.rollback-btn {
+  height: 38px;
+  padding: 0 12px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: var(--bg-soft);
+  color: var(--text-secondary);
+
+  font-size: 13px;
+  font-weight: 500;
+
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+
+.rollback-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+body.light .rollback-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
 /* ===== КНОПКА СТАРТА ===== */
 
 .start-btn {
@@ -396,7 +431,7 @@ body.light .timer-name::placeholder {
 
   font-size: 22px;
 
-  margin: 0 auto;
+  margin: 0;
 
   display: flex;
   align-items: center;
