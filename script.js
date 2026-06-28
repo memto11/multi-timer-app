@@ -1,13 +1,12 @@
 const timersContainer = document.getElementById("timers");
 const emptyState = document.getElementById("emptyState");
 const addBtn = document.getElementById("addTimer");
-const exportBtn = document.getElementById("export");
 const exportArchiveBtn = document.getElementById("exportArchive");
 const clearArchiveBtn = document.getElementById("clearArchive");
 const body = document.body;
 const settingsBtn = document.getElementById("settings");
 const backBtn = document.getElementById("backBtn");
-const clearAllBtn = document.getElementById("clearAll");
+const archiveAllBtn = document.getElementById("archiveAll");
 const checkUpdateBtn = document.getElementById("checkUpdates");
 const toggleThemeBtn = document.getElementById("toggleTheme");
 const openStatsBtn = document.getElementById("openStats");
@@ -562,50 +561,7 @@ setInterval(() => {
 // EXPORT
 // =====================
 
-exportBtn.onclick = async () => {
-  try {
-    if (!timers.length) {
-      showToast("Нет данных для экспорта");
-      return;
-    }
 
-    const filePath = await window.electronAPI.saveFile("report.xlsx");
-
-    if (!filePath) return; // отмена
-
-    const main = timers.filter((t) => t.type === "main");
-    const extra = timers.filter((t) => t.type === "extra");
-
-    const data = [];
-
-    data.push(["Плановые задачи"]);
-    data.push(["Задача", "Время"]);
-
-    main.forEach((t) => {
-      data.push([t.name || "Без названия", formatTime(getCurrentTime(t))]);
-    });
-
-    data.push([]);
-    data.push(["Дополнительные задачи"]);
-    data.push(["Задача", "Время"]);
-
-    extra.forEach((t) => {
-      data.push([t.name || "Без названия", formatTime(getCurrentTime(t))]);
-    });
-
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(wb, ws, "Отчет");
-
-    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-
-    await window.electronAPI.writeFile(filePath, wbout);
-  } catch (e) {
-    console.error(e);
-    showToast("Ошибка экспорта");
-  }
-};
 exportArchiveBtn.onclick = async () => {
   try {
     if (!archive.length) {
@@ -777,13 +733,13 @@ backBtn.onclick = () => {
   }
 };
 
-clearAllBtn.onclick = () => {
+archiveAllBtn.onclick = () => {
   if (!timers.length) {
-    showToast("Нет таймеров для удаления");
+    showToast("Нет таймеров для архивации");
     return;
   }
 
-  showClearAllModal();
+  showArchiveAllModal();
 };
 
 function renderStats() {
@@ -817,21 +773,21 @@ function renderStats() {
   `;
 }
 
-function showClearAllModal() {
+function showArchiveAllModal() {
   const modal = document.createElement("div");
   modal.className = "update-modal";
 
   modal.innerHTML = `
     <div class="update-box">
-      <div class="update-text">
-        Удалить все таймеры?
-        <br><br>
-        <span class="modal-warning">
-          Таймеры будут удалены без сохранения в архив.
-        </span>
-      </div>
+     <div class="update-text">
+  Перенести все таймеры в архив?
+  <br><br>
+  <span class="modal-warning">
+    Все текущие таймеры будут сохранены в архив и удалены с главного экрана.
+  </span>
+</div>
       <div class="update-actions">
-        <button id="clearAllYes">Удалить</button>
+        <button id="clearAllYes">Перенести</button>
         <button id="clearAllNo">Отмена</button>
       </div>
     </div>
@@ -843,13 +799,31 @@ function showClearAllModal() {
     closeModal(modal);
   };
 
-  document.getElementById("clearAllYes").onclick = () => {
-    timers = [];
-    saveTimers();
-    renderTimers();
-    closeModal(modal);
-    showToast("Все таймеры удалены");
-  };
+document.getElementById("clearAllYes").onclick = () => {
+  const today = new Date().toLocaleDateString("en-CA");
+
+  timers.forEach((timer) => {
+    const actualTime = getCurrentTime(timer);
+
+    if (actualTime > 0) {
+      archive.push({
+        date: today,
+        name: timer.name,
+        duration: actualTime,
+        type: timer.type,
+      });
+    }
+  });
+
+  timers = [];
+
+  saveArchive();
+  saveTimers();
+  renderTimers();
+
+  closeModal(modal);
+  showToast("Все таймеры перенесены в архив");
+};
 }
 
 // =====================

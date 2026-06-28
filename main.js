@@ -35,11 +35,13 @@ let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 400,
-    height: 600,
+    width: 500,
+    height: 700
+  ,
 
-    minWidth: 400,
-    minHeight: 600,
+    minWidth: 500,
+    minHeight: 700
+  ,
 
     show: false,
     backgroundColor: "#2f2f2f",
