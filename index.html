@@ -49,16 +49,19 @@
         </div>
         <div id="timers" class="timers-wrapper"></div>
 
-        <div id="emptyState" class="empty-state">
-          <div class="empty-state-title">Нажмите «+»</div>
-          <div class="empty-state-text">чтобы добавить таймер</div>
+        <div id="emptyState" class="empty-state"></div>
+
+        <button id="addTimer">Добавить таймер</button>
+
+        <div class="bottom-panel">
+          <div id="settings" class="settings-icon-btn" title="Настройки">
+            <img
+              src="./assets/settings.svg"
+              alt="Настройки"
+              class="settings-icon"
+            />
+          </div>
         </div>
-
-        <button id="addTimer">+</button>
-
-       <div class="bottom-panel">
-  <div id="settings" class="settings-text-btn">Настройки</div>
-</div>
       </div>
 
       <!-- ЭКРАН НАСТРОЕК -->
@@ -75,9 +78,9 @@
             Проверка обновлений
           </button>
 
-       <button id="archiveAll" class="settings-btn">
-  Все таймеры в архив
-</button>
+          <button id="archiveAll" class="settings-btn">
+            Все таймеры в архив
+          </button>
           <button id="exportArchive" class="settings-btn">
             Выгрузить архив (7 дней)
           </button>
