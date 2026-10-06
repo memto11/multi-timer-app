@@ -10,6 +10,7 @@ const archiveAllBtn = document.getElementById("archiveAll");
 const checkUpdateBtn = document.getElementById("checkUpdates");
 const toggleThemeBtn = document.getElementById("toggleTheme");
 const openStatsBtn = document.getElementById("openStats");
+const openAboutBtn = document.getElementById("openAbout");
 const statsScreen = document.getElementById("statsScreen");
 const backFromStats = document.getElementById("backFromStats");
 const toMainFromStats = document.getElementById("toMainFromStats");
@@ -457,7 +458,7 @@ function renderTimers() {
       }
     };
 
-// ===== ROLLBACK TIME =====
+    // ===== ROLLBACK TIME =====
     el.querySelector(".rollback-btn").onclick = () => {
       const actualTime = getCurrentTime(timer);
 
@@ -470,7 +471,6 @@ function renderTimers() {
       saveTimers();
       renderTimers();
     };
-
 
     el.querySelector(".delete-btn").onclick = () => {
       const actualTime = getCurrentTime(timer);
@@ -561,7 +561,6 @@ setInterval(() => {
 // EXPORT
 // =====================
 
-
 exportArchiveBtn.onclick = async () => {
   try {
     if (!archive.length) {
@@ -569,7 +568,8 @@ exportArchiveBtn.onclick = async () => {
       return;
     }
 
-    const filePath = await window.electronAPI.saveFile("archive.xlsx");
+    const today = new Date().toLocaleDateString("en-CA");
+    const filePath = await window.electronAPI.saveFile(`archive_${today}.xlsx`);
     if (!filePath) return;
 
     // 🔥 ПРЕОБРАЗОВАНИЕ В РУССКИЙ
@@ -588,6 +588,7 @@ exportArchiveBtn.onclick = async () => {
     const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
 
     await window.electronAPI.writeFile(filePath, wbout);
+    showToast("Архив выгружен");
   } catch (e) {
     console.error(e);
     showToast("Ошибка архива");
@@ -657,6 +658,35 @@ openStatsBtn.onclick = () => {
   body.classList.add("show-stats");
   renderStats();
 };
+
+openAboutBtn.onclick = () => {
+  showAboutModal();
+};
+
+function showAboutModal() {
+  const modal = document.createElement("div");
+  modal.className = "update-modal";
+
+  modal.innerHTML = `
+    <div class="update-box">
+      <div class="update-text">
+        <strong>Multi Timer 2.0</strong>
+        <br><br>
+        Приложение для учёта времени задач.
+        <br><br>
+      </div>
+ <div class="update-actions">
+        <button id="aboutClose">Ок</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById("aboutClose").onclick = () => {
+    closeModal(modal);
+  };
+}
 
 function createTimerFromTemplate(index) {
   if (timers.length >= 12) {
@@ -770,6 +800,11 @@ function renderStats() {
       <div class="stat-title">Дополнительные</div>
       <div class="stat-value">${formatTime(extra)}</div>
     </div>
+
+    <div class="stat-block">
+      <div class="stat-title">Записей в архиве</div>
+      <div class="stat-value">${archive.length}</div>
+    </div>
   `;
 }
 
@@ -799,43 +834,52 @@ function showArchiveAllModal() {
     closeModal(modal);
   };
 
-document.getElementById("clearAllYes").onclick = () => {
-  const today = new Date().toLocaleDateString("en-CA");
+  document.getElementById("clearAllYes").onclick = () => {
+    const today = new Date().toLocaleDateString("en-CA");
 
-  timers.forEach((timer) => {
-    const actualTime = getCurrentTime(timer);
+    timers.forEach((timer) => {
+      const actualTime = getCurrentTime(timer);
 
-    if (actualTime > 0) {
-      archive.push({
-        date: today,
-        name: timer.name,
-        duration: actualTime,
-        type: timer.type,
-      });
-    }
-  });
+      if (actualTime > 0) {
+        archive.push({
+          date: today,
+          name: timer.name,
+          duration: actualTime,
+          type: timer.type,
+        });
+      }
+    });
 
-  timers = [];
+    timers = [];
 
-  saveArchive();
-  saveTimers();
-  renderTimers();
+    saveArchive();
+    saveTimers();
+    renderTimers();
 
-  closeModal(modal);
-  showToast("Все таймеры перенесены в архив");
-};
+    closeModal(modal);
+    showToast("Все таймеры перенесены в архив");
+  };
 }
 
 // =====================
 // TOAST
 // =====================
 
+let toastTimer = null;
+
 function showToast(msg) {
   const toast = document.getElementById("toast");
+
   toast.textContent = msg;
   toast.classList.add("show");
 
-  setTimeout(() => toast.classList.remove("show"), 2000);
+  if (toastTimer) {
+    clearTimeout(toastTimer);
+  }
+
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 1200);
 }
 
 // =====================

@@ -761,18 +761,30 @@ h3 {
   left: 50%;
   transform: translateX(-50%);
 
-  background: var(--bg-card);
-  color: var(--text-main);
+  background: #f2f2f7;
+  color: #1c1c1e;
 
   padding: 10px 20px;
   border-radius: 12px;
 
   font-size: 14px;
+  text-align: center;
+
+  min-width: 220px;
+  max-width: calc(100% - 40px);
 
   opacity: 0;
   pointer-events: none;
 
-  transition: 0.3s;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+
+  transition: 0.25s;
+}
+
+body.light .toast {
+  background: #1c1c1e;
+  color: #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
 }
 
 .toast.show {
@@ -1287,4 +1299,26 @@ body.light .template-option:hover {
     opacity: 0;
     transform: scale(0.95) translateY(10px);
   }
+}
+
+/* ===== ABOUT BUTTON / INVERTED ===== */
+
+#openAbout {
+  background: #f2f2f7;
+  color: #1c1c1e;
+}
+
+#openAbout:hover {
+  background: #ffffff;
+  color: #1c1c1e;
+}
+
+body.light #openAbout {
+  background: #1c1c1e;
+  color: #ffffff;
+}
+
+body.light #openAbout:hover {
+  background: #2c2c2e;
+  color: #ffffff;
 }
