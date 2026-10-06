@@ -34,7 +34,8 @@
       "*.js",
       "*.html",
       "*.css",
-      "*.ico"
+      "*.ico",
+      "assets/**/*"
     ],
     "win": {
       "target": "nsis",
