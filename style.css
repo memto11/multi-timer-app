@@ -537,7 +537,7 @@ body.light #backBtn:hover {
 
 #addTimer:hover {
   background: var(--accent-hover);
-  transform: translateX(-50%) translateY(-2px);
+  transform: translateY(-2px);
 }
 
 #addTimer:active {
@@ -967,10 +967,6 @@ body.light .toast {
 
 #addTimer.limit:hover {
   transform: none;
-}
-
-#addTimer:not(:disabled):hover {
-  transform: scale(1.08);
 }
 
 #addTimer:not(:disabled):active {
